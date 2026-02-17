@@ -7,17 +7,28 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Search, MapPin, Star, Calendar, Shield, Plus } from "lucide-react";
+import { Search, MapPin, Star, Calendar, Shield, Plus, Camera } from "lucide-react";
 import { GearDetailsDialog } from "@/components/gear/GearDetailsDialog";
 import { AddCategoryDialog } from "@/components/marketplace/AddCategoryDialog";
 import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
 import { useLanguage } from "@/hooks/useLanguage";
 import { supabase } from "@/integrations/supabase/client";
-import canon5D from "@/assets/Canon5DIV.webp"
-import manfrotto from "@/assets/manfrotto-tripod.avif"
-import rode from "@/assets/RODE-side.jpg"
-import ronin_gimbal from "@/assets/ronin-s-gimbal.jpg"
-import tripod from "@/assets/tripod.jpg"
+
+interface GearItem {
+  id: string;
+  owner: string;
+  vendor_id: string | null;
+  title: string;
+  category: string;
+  priceDay: string;
+  priceWeek: string;
+  rating: number;
+  reviews: number;
+  location: string;
+  image: string | null;
+  verified: boolean;
+  condition: string;
+}
 
 const Gear = () => {
   const navigate = useNavigate();
@@ -28,6 +39,8 @@ const Gear = () => {
   const [addCategoryDialog, setAddCategoryDialog] = useState(false);
   const [visibleCount, setVisibleCount] = useState(6);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [allGearItems, setAllGearItems] = useState<GearItem[]>([]);
+  const [loadingGear, setLoadingGear] = useState(true);
   
   // Initialize from URL params
   const [selectedCategory, setSelectedCategory] = useState(searchParams.get('category') || "All Categories");
@@ -35,6 +48,53 @@ const Gear = () => {
   const [selectedLocation, setSelectedLocation] = useState(searchParams.get('location') || "All Locations");
   
   const [customCategories, setCustomCategories] = useState<string[]>([]);
+
+  // Fetch real gear from Supabase
+  useEffect(() => {
+    const fetchGear = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('gear')
+          .select(`
+            *,
+            profiles:vendor_id (
+              id,
+              name,
+              avatar_url,
+              location
+            )
+          `)
+          .eq('is_available', true)
+          .order('created_at', { ascending: false });
+
+        if (error) throw error;
+
+        const mapped: GearItem[] = (data || []).map((g: any) => ({
+          id: g.id,
+          owner: g.profiles?.name || 'Equipment Owner',
+          vendor_id: g.vendor_id,
+          title: g.title,
+          category: g.category,
+          priceDay: `\u20a6${Number(g.price_per_day).toLocaleString()}`,
+          priceWeek: `\u20a6${Math.round(Number(g.price_per_day) * 5.5).toLocaleString()}`,
+          rating: g.rating || 0,
+          reviews: g.reviews_count || 0,
+          location: g.profiles?.location || g.location || 'Nigeria',
+          image: g.image_url,
+          verified: true,
+          condition: 'Good'
+        }));
+
+        setAllGearItems(mapped);
+      } catch (error) {
+        console.error('Error fetching gear:', error);
+      } finally {
+        setLoadingGear(false);
+      }
+    };
+
+    fetchGear();
+  }, []);
   
   // Fetch custom categories from database
   useEffect(() => {
@@ -78,261 +138,6 @@ const Gear = () => {
     'very good': t('gear.condition.veryGood'),
     good: t('gear.condition.good'),
   };
-
-  const allGearItems = [
-    {
-      id: 1,
-      owner: "David Chen",
-      title: "Sony α7R V Mirrorless Camera",
-      category: "Cameras",
-      priceDay: "$89",
-      priceWeek: "$450",
-      rating: 4.9,
-      reviews: 67,
-      location: "Cape Town, SA",
-      image: "https://images.unsplash.com/photo-1606983340126-99ab4feaa64a?w=400&h=300&fit=crop",
-      verified: true,
-      condition: "Excellent"
-    },
-    {
-      id: 2,
-      owner: "Sarah Williams", 
-      title: "Canon EF 70-200mm f/2.8L",
-      category: "Lenses",
-      priceDay: "$45",
-      priceWeek: "$250",
-      rating: 4.8,
-      reviews: 43,
-      location: "Johannesburg, SA",
-      image: "https://images.unsplash.com/photo-1617005082133-548c4dd27f35?w=400&h=300&fit=crop",
-      verified: true,
-      condition: "Very Good"
-    },
-    {
-      id: 3,
-      owner: "Mike Thompson",
-      title: "Profoto B1X 500 AirTTL",
-      category: "Lighting",
-      priceDay: "$75",
-      priceWeek: "$400",
-      rating: 5.0,
-      reviews: 28,
-      location: "Nairobi, Kenya",
-      image: "https://images.unsplash.com/photo-1518837695005-2083093ee35b?w=400&h=300&fit=crop",
-      verified: true,
-      condition: "Excellent"
-    },
-    {
-      id: 4,
-      owner: "Emma Rodriguez",
-      title: "Canon 5D Mark IV",
-      category: "Cameras",
-      priceDay: "$65",
-      priceWeek: "$350",
-      rating: 4.7,
-      reviews: 89,
-      location: "Lagos, Nigeria",
-      image: canon5D,
-      verified: true,
-      condition: "Very Good"
-    },
-    {
-      id: 5,
-      owner: "James Wilson",
-      title: "Sony FE 24-70mm f/2.8 GM",
-      category: "Lenses",
-      priceDay: "$55",
-      priceWeek: "$300",
-      rating: 4.9,
-      reviews: 156,
-      location: "Accra, Ghana",
-      image: "https://images.unsplash.com/photo-1617005082133-548c4dd27f35?w=400&h=300&fit=crop",
-      verified: true,
-      condition: "Excellent"
-    },
-    {
-      id: 6,
-      owner: "Lisa Park",
-      title: "Manfrotto Carbon Fiber Tripod",
-      category: "Tripods",
-      priceDay: "$25",
-      priceWeek: "$120",
-      rating: 4.6,
-      reviews: 34,
-      location: "Durban, SA",
-      image: manfrotto,
-      verified: true,
-      condition: "Good"
-    },
-    {
-      id: 7,
-      owner: "Ahmed Hassan",
-      title: "Godox AD600 Pro",
-      category: "Lighting",
-      priceDay: "$60",
-      priceWeek: "$320",
-      rating: 4.8,
-      reviews: 92,
-      location: "Cairo, Egypt",
-      image: "https://images.unsplash.com/photo-1518837695005-2083093ee35b?w=400&h=300&fit=crop",
-      verified: true,
-      condition: "Excellent"
-    },
-    {
-      id: 8,
-      owner: "Maria Santos",
-      title: "DJI Ronin-S Gimbal",
-      category: "Accessories",
-      priceDay: "$40",
-      priceWeek: "$200",
-      rating: 4.5,
-      reviews: 78,
-      location: "Luanda, Angola",
-      image: ronin_gimbal,
-      verified: true,
-      condition: "Very Good"
-    },
-    {
-      id: 9,
-      owner: "Kevin Chang",
-      title: "Nikon D850",
-      category: "Cameras",
-      priceDay: "$70",
-      priceWeek: "$380",
-      rating: 4.7,
-      reviews: 145,
-      location: "Casablanca, Morocco",
-      image: "https://images.unsplash.com/photo-1606983340126-99ab4feaa64a?w=400&h=300&fit=crop",
-      verified: true,
-      condition: "Excellent"
-    },
-    {
-      id: 10,
-      owner: "Fatima Al-Zahra",
-      title: "Canon RF 85mm f/1.2L",
-      category: "Lenses",
-      priceDay: "$80",
-      priceWeek: "$420",
-      rating: 5.0,
-      reviews: 67,
-      location: "Tunis, Tunisia",
-      image: "https://images.unsplash.com/photo-1617005082133-548c4dd27f35?w=400&h=300&fit=crop",
-      verified: true,
-      condition: "Excellent"
-    },
-    {
-      id: 11,
-      owner: "Tom Mitchell",
-      title: "Rode VideoMic Pro Plus",
-      category: "Audio",
-      priceDay: "$20",
-      priceWeek: "$100",
-      rating: 4.6,
-      reviews: 45,
-      location: "Kigali, Rwanda",
-      image: rode,
-      verified: true,
-      condition: "Good"
-    },
-    {
-      id: 12,
-      owner: "Sophie Laurent",
-      title: "Elinchrom ELB 500 TTL",
-      category: "Lighting",
-      priceDay: "$65",
-      priceWeek: "$340",
-      rating: 4.7,
-      reviews: 83,
-      location: "Dakar, Senegal",
-      image: "https://images.unsplash.com/photo-1518837695005-2083093ee35b?w=400&h=300&fit=crop",
-      verified: true,
-      condition: "Very Good"
-    },
-    {
-      id: 13,
-      owner: "Marcus Johnson",
-      title: "Fujifilm X-T5",
-      category: "Cameras",
-      priceDay: "$75",
-      priceWeek: "$390",
-      rating: 4.8,
-      reviews: 124,
-      location: "Kampala, Uganda",
-      image: "https://images.unsplash.com/photo-1606983340126-99ab4feaa64a?w=400&h=300&fit=crop",
-      verified: true,
-      condition: "Excellent"
-    },
-    {
-      id: 14,
-      owner: "Priya Sharma",
-      title: "Peak Design Travel Tripod",
-      category: "Tripods",
-      priceDay: "$35",
-      priceWeek: "$180",
-      rating: 4.9,
-      reviews: 156,
-      location: "Addis Ababa, Ethiopia",
-      image: tripod,
-      verified: true,
-      condition: "Excellent"
-    },
-    {
-      id: 15,
-      owner: "Omar Benali",
-      title: "Sony α7 III",
-      category: "Cameras",
-      priceDay: "$60",
-      priceWeek: "$310",
-      rating: 4.6,
-      reviews: 203,
-      location: "Rabat, Morocco",
-      image: "https://images.unsplash.com/photo-1606983340126-99ab4feaa64a?w=400&h=300&fit=crop",
-      verified: true,
-      condition: "Good"
-    },
-    {
-      id: 16,
-      owner: "Rachel Green",
-      title: "Tamron 28-75mm f/2.8",
-      category: "Lenses",
-      priceDay: "$40",
-      priceWeek: "$210",
-      rating: 4.5,
-      reviews: 87,
-      location: "Windhoek, Namibia",
-      image: "https://images.unsplash.com/photo-1617005082133-548c4dd27f35?w=400&h=300&fit=crop",
-      verified: true,
-      condition: "Very Good"
-    },
-    {
-      id: 17,
-      owner: "Hassan Okoye",
-      title: "Aputure LS 300D Mark II",
-      category: "Lighting",
-      priceDay: "$55",
-      priceWeek: "$290",
-      rating: 4.7,
-      reviews: 76,
-      location: "Abuja, Nigeria",
-      image: "https://images.unsplash.com/photo-1518837695005-2083093ee35b?w=400&h=300&fit=crop",
-      verified: true,
-      condition: "Excellent"
-    },
-    {
-      id: 18,
-      owner: "Zara Mohammed",
-      title: "Sigma 50mm f/1.4 Art",
-      category: "Lenses",
-      priceDay: "$50",
-      priceWeek: "$260",
-      rating: 4.8,
-      reviews: 134,
-      location: "Lusaka, Zambia",
-      image: "https://images.unsplash.com/photo-1617005082133-548c4dd27f35?w=400&h=300&fit=crop",
-      verified: true,
-      condition: "Excellent"
-    }
-  ];
 
   // Filter gear based on search, category, and location
   const filteredGearItems = allGearItems.filter(item => {
@@ -443,6 +248,20 @@ const Gear = () => {
         {/* Gear Grid */}
         <section className="py-16">
           <div className="container mx-auto px-4">
+            {loadingGear ? (
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                {[1, 2, 3, 4, 5, 6].map((i) => (
+                  <Card key={i} className="overflow-hidden animate-pulse">
+                    <div className="aspect-video bg-muted" />
+                    <div className="p-6 space-y-3">
+                      <div className="h-4 bg-muted rounded w-1/3" />
+                      <div className="h-5 bg-muted rounded w-2/3" />
+                      <div className="h-4 bg-muted rounded w-1/2" />
+                    </div>
+                  </Card>
+                ))}
+              </div>
+            ) : (
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
               {gearItems.map((item) => (
                 <Card key={item.id} className="overflow-hidden hover:shadow-medium transition-smooth">
@@ -451,11 +270,18 @@ const Gear = () => {
                     className="aspect-video bg-muted relative cursor-pointer"
                     onClick={() => navigate(`/gear/${item.id}`)}
                   >
-                    <img 
-                      src={item.image} 
-                      alt={item.title}
-                      className="w-full h-full object-cover"
-                    />
+                    {item.image ? (
+                      <img 
+                        src={item.image} 
+                        alt={item.title}
+                        className="w-full h-full object-cover"
+                        loading="lazy"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary/10 to-secondary/10">
+                        <Camera className="w-12 h-12 text-muted-foreground/50" />
+                      </div>
+                    )}
                     <div className="absolute top-4 left-4">
                       <Badge className="bg-green-100 text-green-800">{t('gear.available')}</Badge>
                     </div>
@@ -492,7 +318,7 @@ const Gear = () => {
                     {/* Clickable Owner Name */}
                     <p 
                       className="text-muted-foreground mb-3 cursor-pointer hover:text-primary transition-colors"
-                      onClick={() => navigate(`/vendor/${item.id}`)}
+                      onClick={() => item.vendor_id ? navigate(`/vendor/${item.vendor_id}`) : navigate(`/gear/${item.id}`)}
                     >
                       {t('services.by')} {item.owner}
                     </p>
@@ -543,12 +369,35 @@ const Gear = () => {
               ))}
             </div>
             
+            )}
+
             {/* Infinite Scroll Trigger */}
-            {hasMore && (
+            {!loadingGear && hasMore && (
               <div ref={loadMoreRef} className="text-center py-8">
                 {isLoadingMore && (
                   <div className="text-muted-foreground">{t('gear.loadingMore')}</div>
                 )}
+              </div>
+            )}
+
+            {/* No Results */}
+            {!loadingGear && filteredGearItems.length === 0 && (
+              <div className="text-center py-16">
+                <div className="w-24 h-24 bg-muted rounded-full flex items-center justify-center mx-auto mb-6">
+                  <Search className="w-12 h-12 text-muted-foreground" />
+                </div>
+                <h3 className="text-xl font-semibold mb-2">No gear found</h3>
+                <p className="text-muted-foreground mb-6">Try adjusting your search criteria or explore different categories</p>
+                <Button 
+                  variant="outline" 
+                  onClick={() => {
+                    setSearchTerm("");
+                    setSelectedCategory("All Categories");
+                    setSelectedLocation("All Locations");
+                  }}
+                >
+                  Clear Filters
+                </Button>
               </div>
             )}
           </div>

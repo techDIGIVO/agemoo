@@ -25,26 +25,7 @@ import { DemoPaymentDialog } from "@/components/payment/DemoPaymentDialog";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 
-// Enhanced Mock Data to support the merged logic
-const GEAR_DATA: Record<string, any> = {
-  "1": {
-    id: "1",
-    title: "Canon EOS R5",
-    owner: "Amara Johnson",
-    category: "Cameras",
-    priceDay: "₦15,000",
-    priceWeek: "₦85,000",
-    rating: 4.9,
-    reviews: 24,
-    location: "Ikeja, Lagos",
-    image: "/placeholder.svg",
-    verified: true,
-    condition: "Like New",
-    description: "The EOS R5 features a 45MP sensor and 8K video. Perfect for professional weddings.",
-    specifications: ["45MP Full-Frame CMOS", "8K30 Raw Video", "5-Axis Stabilization", "Dual Card Slots"],
-    included: ["Camera Body", "2x Batteries", "Charger", "64GB CFexpress Card"]
-  }
-};
+
 
 const GearAvailabilityPage = () => {
   const { id } = useParams();
@@ -62,18 +43,29 @@ const GearAvailabilityPage = () => {
       if (!id) return;
       setLoading(true);
 
-      // Try fetching from Supabase
       const { data, error } = await supabase
         .from('gear')
-        .select('*')
+        .select('*, profiles:vendor_id (id, name, location)')
         .eq('id', id)
         .maybeSingle();
 
+      if (error) {
+        console.error('Error fetching gear:', error);
+      }
+
       if (data) {
-        setGear(data);
-      } else {
-        // Fallback to enhanced mock data
-        setGear(GEAR_DATA[id]);
+        // Map DB fields to the shape the component expects
+        setGear({
+          ...data,
+          owner: data.profiles?.name || 'Equipment Owner',
+          priceDay: `\u20a6${Number(data.price_per_day).toLocaleString()}`,
+          priceWeek: `\u20a6${Math.round(Number(data.price_per_day) * 5.5).toLocaleString()}`,
+          image: data.image_url,
+          rating: data.rating || 0,
+          reviews: data.reviews_count || 0,
+          verified: true,
+          condition: 'Good'
+        });
       }
       setLoading(false);
     };

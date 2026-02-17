@@ -8,45 +8,37 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ArrowLeft, Star, MapPin, Calendar, MessageCircle, Heart, Package } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { SaveButton } from "@/components/marketplace/SaveButton";
+import { MessageButton } from "@/components/marketplace/MessageButton";
+import { useToast } from "@/hooks/use-toast";
 
 const GearDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [gear, setGear] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchGear = async () => {
       if (!id) return;
-      
-      // Try to fetch by slug first, if not found, try by ID (for backward compatibility)
+
       let data, error;
-      
-      // Check if slug is a number (old ID-based URLs)
+
+      // Fetch from Supabase by ID or slug
       if (!isNaN(Number(id))) {
-        // For demo, use mock data based on ID
-        setGear({
-          id: id,
-          title: "Professional Camera Equipment",
-          category: "Cameras",
-          price_per_day: 25000,
-          rating: 4.8,
-          reviews_count: 45,
-          location: "Lagos, Nigeria",
-          description: "High-quality camera equipment available for rent with flexible rental periods.",
-          vendor_id: `vendor-${id}`,
-          is_available: true
-        });
-        setLoading(false);
-        return;
+        ({ data, error } = await supabase
+          .from('gear')
+          .select('*, profiles:vendor_id (id, name, avatar_url, location)')
+          .eq('id', id)
+          .maybeSingle());
+      } else {
+        ({ data, error } = await supabase
+          .from('gear')
+          .select('*, profiles:vendor_id (id, name, avatar_url, location)')
+          .eq('slug', id)
+          .maybeSingle());
       }
-      
-      // Otherwise fetch from database by slug
-      ({ data, error } = await supabase
-        .from('gear')
-        .select('*')
-        .eq('id', id)
-        .maybeSingle());
 
       if (error) {
         console.error('Error fetching gear:', error);
@@ -140,9 +132,12 @@ const GearDetail = () => {
                       </Badge>
                     </div>
                   </div>
-                  <Button variant="outline" size="icon">
-                    <Heart className="w-4 h-4" />
-                  </Button>
+                  <SaveButton 
+                    itemType="gear" 
+                    itemId={gear.id}
+                    variant="outline"
+                    size="icon"
+                  />
                 </div>
 
                 <Tabs defaultValue="description">
@@ -192,18 +187,35 @@ const GearDetail = () => {
                       className="w-full" 
                       size="lg"
                       disabled={!gear.is_available}
+                      onClick={() => {
+                        if (!gear.is_available) return;
+                        navigate(`/gear/${gear.id}/availability`);
+                      }}
                     >
                       <Calendar className="w-4 h-4 mr-2" />
                       {gear.is_available ? "Rent Now" : "Currently Unavailable"}
                     </Button>
-                    <Button 
-                      variant="outline" 
-                      className="w-full"
-                      onClick={() => navigate('/messages')}
-                    >
-                      <MessageCircle className="w-4 h-4 mr-2" />
-                      Contact Owner
-                    </Button>
+                    {gear.vendor_id ? (
+                      <MessageButton 
+                        vendorId={gear.vendor_id}
+                        variant="outline"
+                        className="w-full"
+                      />
+                    ) : (
+                      <Button
+                        variant="outline"
+                        className="w-full"
+                        onClick={() => {
+                          toast({
+                            title: "Owner not available",
+                            description: "Contact information for this equipment owner is not yet available.",
+                          });
+                        }}
+                      >
+                        <MessageCircle className="w-4 h-4 mr-2" />
+                        Contact Owner
+                      </Button>
+                    )}
                   </div>
 
                   <div className="pt-4 border-t space-y-3 text-sm">
