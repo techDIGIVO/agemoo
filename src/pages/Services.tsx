@@ -7,17 +7,37 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Search, MapPin, Star, Calendar, DollarSign, Plus } from "lucide-react";
+import { Search, MapPin, Star, Calendar, DollarSign, Plus, Camera } from "lucide-react";
 import { BookingDialog } from "@/components/booking/BookingDialog";
 import { AddCategoryDialog } from "@/components/marketplace/AddCategoryDialog";
 import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
 import { useLanguage } from "@/hooks/useLanguage";
 import { supabase } from "@/integrations/supabase/client";
-import beautyModel from "@/assets/beauty-model-girl-fashion-manicure-make-up-35653081.webp" 
+import { useAuth } from "@/hooks/useAuth";
+import { useToast } from "@/hooks/use-toast"; 
+
+interface ServiceItem {
+  id: string;
+  vendor: string;
+  vendor_id: string | null;
+  title: string;
+  category: string;
+  price: string;
+  rating: number;
+  reviews: number;
+  location: string;
+  image: string | null;
+  verified: boolean;
+  languages: string[];
+  experience: string;
+  specialties: string[];
+}
 
 const Services = () => {
   const navigate = useNavigate();
   const { t } = useLanguage();
+  const { user } = useAuth();
+  const { toast } = useToast();
   const [searchParams, setSearchParams] = useSearchParams();
   
   const [bookingDialog, setBookingDialog] = useState<{ isOpen: boolean; service: any }>({
@@ -27,6 +47,8 @@ const Services = () => {
   const [addCategoryDialog, setAddCategoryDialog] = useState(false);
   const [visibleCount, setVisibleCount] = useState(6);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [allServices, setAllServices] = useState<ServiceItem[]>([]);
+  const [loadingServices, setLoadingServices] = useState(true);
   
   // Initialize from URL params
   const [selectedCategory, setSelectedCategory] = useState(searchParams.get('category') || "All Categories");
@@ -35,6 +57,56 @@ const Services = () => {
   const [sortBy, setSortBy] = useState(searchParams.get('sort') || "rating");
   
   const [customCategories, setCustomCategories] = useState<string[]>([]);
+
+  // Fetch real services from Supabase
+  useEffect(() => {
+    const fetchServices = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('services')
+          .select(`
+            *,
+            profiles:vendor_id (
+              id,
+              name,
+              avatar_url,
+              location,
+              bio,
+              profession
+            )
+          `)
+          .eq('is_active', true)
+          .order('created_at', { ascending: false });
+
+        if (error) throw error;
+
+        const mapped: ServiceItem[] = (data || []).map((s: any) => ({
+          id: s.id,
+          vendor: s.profiles?.name || 'Photographer',
+          vendor_id: s.vendor_id,
+          title: s.title,
+          category: s.category,
+          price: `₦${Number(s.price).toLocaleString()}${s.duration ? '/' + s.duration : ''}`,
+          rating: s.rating || 0,
+          reviews: s.reviews_count || 0,
+          location: s.profiles?.location || s.location || 'Nigeria',
+          image: s.image_url,
+          verified: true,
+          languages: ['English'],
+          experience: s.profiles?.profession || 'Photography',
+          specialties: [s.category, s.subcategory].filter(Boolean) as string[]
+        }));
+
+        setAllServices(mapped);
+      } catch (error) {
+        console.error('Error fetching services:', error);
+      } finally {
+        setLoadingServices(false);
+      }
+    };
+
+    fetchServices();
+  }, []);
   
   // Fetch custom categories from database
   useEffect(() => {
@@ -88,249 +160,6 @@ const Services = () => {
     "Dar es Salaam, Tanzania",
     "Abuja, Nigeria",
     "Casablanca, Morocco"
-  ];
-
-  const allServices = [
-    {
-      id: 1,
-      vendor: "Amara Johnson",
-      title: "Creative Portrait Photography",
-      category: "Portrait Photography",
-      price: "₦45,000/session",
-      rating: 4.9,
-      reviews: 127,
-      location: "Lagos, Nigeria",
-      image: "https://images.unsplash.com/photo-1531123897727-8f129e1688ce?w=400&h=300&fit=crop",
-      verified: true,
-      languages: ["English", "Yoruba"],
-      experience: "5+ years",
-      specialties: ["Natural Light", "Studio Portraits", "Family Photos"]
-    },
-    {
-      id: 2,
-      vendor: "Zara Okafor",
-      title: "Wedding & Event Photography",
-      category: "Wedding Photography",
-      price: "₦120,000/day",
-      rating: 4.8,
-      reviews: 89,
-      location: "Abuja, Nigeria",
-      image: "https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?w=400&h=300&fit=crop",
-      verified: true,
-      languages: ["English", "Igbo"],
-      experience: "7+ years",
-      specialties: ["Traditional Weddings", "Modern Ceremonies", "Pre-wedding"]
-    },
-    {
-      id: 3,
-      vendor: "Kemi Adebayo",
-      title: "Fashion & Beauty Photography",
-      category: "Fashion Photography",
-      price: "₦65,000/shoot",
-      rating: 4.9,
-      reviews: 203,
-      location: "Lagos, Nigeria",
-      image: beautyModel,
-      verified: true,
-      languages: ["English", "Yoruba"],
-      experience: "4+ years",
-      specialties: ["Editorial", "Commercial", "Beauty Shots"]
-    },
-    {
-      id: 4,
-      vendor: "Akosua Frimpong",
-      title: "Documentary & Street Photography",
-      category: "Street Photography",
-      price: "₦55,000/day",
-      rating: 4.7,
-      reviews: 156,
-      location: "Accra, Ghana",
-      image: "https://images.unsplash.com/photo-1506277886164-e25aa3f4ef7f?w=400&h=300&fit=crop",
-      verified: true,
-      languages: ["English", "Twi"],
-      experience: "6+ years",
-      specialties: ["Cultural Events", "Street Life", "Documentaries"]
-    },
-    {
-      id: 5,
-      vendor: "Fatima Al-Hassan",
-      title: "Professional Product Photography",
-      category: "Product Photography",
-      price: "₦35,000/session",
-      rating: 4.8,
-      reviews: 142,
-      location: "Cairo, Egypt",
-      image: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=400&h=300&fit=crop",
-      verified: true,
-      languages: ["Arabic", "English", "French"],
-      experience: "5+ years",
-      specialties: ["E-commerce", "Luxury Goods", "Food Photography"]
-    },
-    {
-      id: 6,
-      vendor: "Grace Akinyi",
-      title: "Wildlife & Nature Photography",
-      category: "Wildlife Photography",
-      price: "₦85,000/day",
-      rating: 4.9,
-      reviews: 98,
-      location: "Nairobi, Kenya",
-      image: "https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?w=400&h=300&fit=crop",
-      verified: true,
-      languages: ["English", "Swahili"],
-      experience: "8+ years",
-      specialties: ["Safari Photography", "Bird Watching", "Conservation"]
-    },
-    {
-      id: 7,
-      vendor: "Kwame Asante",
-      title: "Corporate Event Photography",
-      category: "Event Photography",
-      price: "₦75,000/event",
-      rating: 4.6,
-      reviews: 134,
-      location: "Accra, Ghana",
-      image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=300&fit=crop",
-      verified: true,
-      languages: ["English", "Twi"],
-      experience: "6+ years",
-      specialties: ["Corporate Events", "Conferences", "Team Building"]
-    },
-    {
-      id: 8,
-      vendor: "Nomsa Mbeki",
-      title: "Cinematic Wedding Videography",
-      category: "Video Production",
-      price: "₦150,000/wedding",
-      rating: 4.8,
-      reviews: 87,
-      location: "Cape Town, South Africa",
-      image: "https://images.unsplash.com/photo-1601933973783-43cf8a7d4c5f?w=400&h=300&fit=crop",
-      verified: true,
-      languages: ["English", "Afrikaans", "Xhosa"],
-      experience: "5+ years",
-      specialties: ["Wedding Films", "Love Stories", "Drone Footage"]
-    },
-    {
-      id: 9,
-      vendor: "Aishah Mwangi",
-      title: "Children & Family Portraits",
-      category: "Portrait Photography",
-      price: "₦40,000/session",
-      rating: 4.9,
-      reviews: 176,
-      location: "Nairobi, Kenya",
-      image: "https://images.unsplash.com/photo-1551836022-deb4988cc6c0?w=400&h=300&fit=crop",
-      verified: true,
-      languages: ["English", "Swahili"],
-      experience: "4+ years",
-      specialties: ["Newborn Photography", "Family Sessions", "Children Portraits"]
-    },
-    {
-      id: 10,
-      vendor: "Blessing Adegoke",
-      title: "Traditional & Cultural Photography",
-      category: "Event Photography",
-      price: "₦60,000/event",
-      rating: 4.7,
-      reviews: 112,
-      location: "Lagos, Nigeria",
-      image: "https://images.unsplash.com/photo-1566478989037-eec170784d0b?w=400&h=300&fit=crop",
-      verified: true,
-      languages: ["English", "Yoruba"],
-      experience: "6+ years",
-      specialties: ["Cultural Festivals", "Traditional Ceremonies", "Heritage Events"]
-    },
-    {
-      id: 11,
-      vendor: "Youssef Benali",
-      title: "Architectural & Interior Photography",
-      category: "Product Photography",
-      price: "₦70,000/project",
-      rating: 4.8,
-      reviews: 95,
-      location: "Casablanca, Morocco",
-      image: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&h=300&fit=crop",
-      verified: true,
-      languages: ["Arabic", "French", "English"],
-      experience: "7+ years",
-      specialties: ["Real Estate", "Interior Design", "Architecture"]
-    },
-    {
-      id: 12,
-      vendor: "Chiamaka Okwu",
-      title: "Professional Photo Editing",
-      category: "Photo Editing",
-      price: "₦15,000/session",
-      rating: 4.9,
-      reviews: 234,
-      location: "Lagos, Nigeria",
-      image: "https://images.unsplash.com/photo-1581833971358-2c8b550f87b3?w=400&h=300&fit=crop",
-      verified: true,
-      languages: ["English", "Igbo"],
-      experience: "5+ years",
-      specialties: ["Color Grading", "Retouching", "Digital Art"]
-    },
-    {
-      id: 13,
-      vendor: "Abena Asante",
-      title: "Maternity & Newborn Photography",
-      category: "Portrait Photography",
-      price: "₦50,000/session",
-      rating: 4.8,
-      reviews: 143,
-      location: "Accra, Ghana",
-      image: "https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400&h=300&fit=crop",
-      verified: true,
-      languages: ["English", "Twi"],
-      experience: "4+ years",
-      specialties: ["Maternity Sessions", "Newborn Photography", "Pregnancy Journey"]
-    },
-    {
-      id: 14,
-      vendor: "Divine Uwimana",
-      title: "Event & Conference Photography",
-      category: "Event Photography",
-      price: "₦55,000/day",
-      rating: 4.7,
-      reviews: 108,
-      location: "Kigali, Rwanda",
-      image: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=400&h=300&fit=crop",
-      verified: true,
-      languages: ["English", "French", "Kinyarwanda"],
-      experience: "5+ years",
-      specialties: ["Corporate Events", "Conferences", "Business Photography"]
-    },
-    {
-      id: 15,
-      vendor: "Amina Hassan",
-      title: "Fashion & Commercial Photography",
-      category: "Fashion Photography",
-      price: "₦80,000/shoot",
-      rating: 4.9,
-      reviews: 167,
-      location: "Dar es Salaam, Tanzania",
-      image: "https://images.unsplash.com/photo-1488998527040-85054a85150e?w=400&h=300&fit=crop",
-      verified: true,
-      languages: ["English", "Swahili"],
-      experience: "6+ years",
-      specialties: ["Fashion Editorial", "Commercial", "Brand Photography"]
-    },
-    {
-      id: 16,
-      vendor: "Sekai Moyo",
-      title: "Music & Entertainment Photography",
-      category: "Event Photography",
-      price: "₦65,000/event",
-      rating: 4.8,
-      reviews: 124,
-      location: "Cape Town, South Africa",
-      image: "https://images.unsplash.com/photo-1516280440614-37939bbacd81?w=400&h=300&fit=crop",
-      verified: true,
-      languages: ["English", "Shona"],
-      experience: "5+ years",
-      specialties: ["Concert Photography", "Music Videos", "Entertainment Events"]
-    }
   ];
 
   // Filter services based on search and category
@@ -454,6 +283,20 @@ const Services = () => {
         {/* Services Grid */}
         <section className="py-16">
           <div className="container mx-auto px-4">
+            {loadingServices ? (
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                {[1, 2, 3, 4, 5, 6].map((i) => (
+                  <Card key={i} className="overflow-hidden animate-pulse">
+                    <div className="aspect-video bg-muted" />
+                    <div className="p-6 space-y-3">
+                      <div className="h-4 bg-muted rounded w-1/3" />
+                      <div className="h-5 bg-muted rounded w-2/3" />
+                      <div className="h-4 bg-muted rounded w-1/2" />
+                    </div>
+                  </Card>
+                ))}
+              </div>
+            ) : (
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
               {visibleServices.map((service) => (
                 <Card key={service.id} className="overflow-hidden hover:shadow-medium transition-smooth">
@@ -462,11 +305,18 @@ const Services = () => {
                     className="aspect-video bg-muted cursor-pointer"
                     onClick={() => navigate(`/service/${service.id}`)}
                   >
-                    <img 
-                      src={service.image} 
-                      alt={service.title}
-                      className="w-full h-full object-cover"
-                    />
+                    {service.image ? (
+                      <img 
+                        src={service.image} 
+                        alt={service.title}
+                        className="w-full h-full object-cover"
+                        loading="lazy"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary/10 to-secondary/10">
+                        <Camera className="w-12 h-12 text-muted-foreground/50" />
+                      </div>
+                    )}
                   </div>
                   <div className="p-6">
                     <div className="flex items-center justify-between mb-2">
@@ -502,7 +352,7 @@ const Services = () => {
                     {/* Clickable Vendor Name */}
                     <p 
                       className="text-muted-foreground mb-2 cursor-pointer hover:text-primary transition-colors"
-                      onClick={() => navigate(`/vendor/service-${service.id}`)}
+                      onClick={() => service.vendor_id ? navigate(`/vendor/${service.vendor_id}`) : navigate(`/service/${service.id}`)}
                     >
                       {t('services.by')} {service.vendor}
                     </p>
@@ -563,8 +413,10 @@ const Services = () => {
               ))}
             </div>
             
+            )}
+
             {/* Infinite Scroll Trigger */}
-            {hasMore && (
+            {!loadingServices && hasMore && (
               <div ref={loadMoreRef} className="text-center py-8">
                 {isLoadingMore && (
                   <div className="text-muted-foreground">{t('services.loadingMore')}</div>
@@ -573,7 +425,7 @@ const Services = () => {
             )}
 
             {/* No Results */}
-            {filteredServices.length === 0 && (
+            {!loadingServices && filteredServices.length === 0 && (
               <div className="text-center py-16">
                 <div className="w-24 h-24 bg-muted rounded-full flex items-center justify-center mx-auto mb-6">
                   <Search className="w-12 h-12 text-muted-foreground" />

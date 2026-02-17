@@ -80,9 +80,8 @@ export const BookingDialog = ({ isOpen, onClose, service }: BookingDialogProps) 
       
       if (!service.vendorId) {
         toast({
-          variant: "destructive",
-          title: "Booking failed",
-          description: "Unable to identify the service provider. Please try again.",
+          title: "Demo Listing",
+          description: "This is a sample listing. To book real services, browse photographers in the Marketplace or find a verified vendor profile.",
         });
         setIsLoading(false);
         return;

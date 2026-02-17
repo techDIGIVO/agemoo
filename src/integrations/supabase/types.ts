@@ -77,6 +77,51 @@ export type Database = {
         }
         Relationships: []
       }
+      job_applications: {
+        Row: {
+          id: string
+          position_title: string
+          department: string
+          full_name: string
+          email: string
+          phone: string | null
+          portfolio_url: string | null
+          cover_letter: string | null
+          user_id: string | null
+          status: string
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          position_title: string
+          department: string
+          full_name: string
+          email: string
+          phone?: string | null
+          portfolio_url?: string | null
+          cover_letter?: string | null
+          user_id?: string | null
+          status?: string
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          position_title?: string
+          department?: string
+          full_name?: string
+          email?: string
+          phone?: string | null
+          portfolio_url?: string | null
+          cover_letter?: string | null
+          user_id?: string | null
+          status?: string
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       bookings: {
         Row: {
           booking_date: string
@@ -196,6 +241,45 @@ export type Database = {
           last_name?: string
           updated_at?: string
           user_id?: string | null
+        }
+        Relationships: []
+      }
+      event_registrations: {
+        Row: {
+          id: string
+          event_title: string
+          event_date: string
+          event_location: string
+          full_name: string
+          email: string
+          phone: string | null
+          user_id: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          event_title: string
+          event_date: string
+          event_location: string
+          full_name: string
+          email: string
+          phone?: string | null
+          user_id?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          event_title?: string
+          event_date?: string
+          event_location?: string
+          full_name?: string
+          email?: string
+          phone?: string | null
+          user_id?: string | null
+          created_at?: string
+          updated_at?: string
         }
         Relationships: []
       }
@@ -501,6 +585,48 @@ export type Database = {
           session_id?: string | null
           updated_at?: string
           user_id?: string | null
+        }
+        Relationships: []
+      }
+      contact_messages: {
+        Row: {
+          id: string
+          name: string
+          email: string
+          subject: string
+          category: string | null
+          priority: string
+          message: string
+          status: string
+          user_id: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          name: string
+          email: string
+          subject: string
+          category?: string | null
+          priority?: string
+          message: string
+          status?: string
+          user_id?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          name?: string
+          email?: string
+          subject?: string
+          category?: string | null
+          priority?: string
+          message?: string
+          status?: string
+          user_id?: string | null
+          created_at?: string
+          updated_at?: string
         }
         Relationships: []
       }

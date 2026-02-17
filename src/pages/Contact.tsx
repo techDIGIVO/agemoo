@@ -14,8 +14,11 @@ import {
   CheckCircle, Users, Headphones, FileText, Globe 
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 
 const Contact = () => {
+  const { user } = useAuth();
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -116,24 +119,46 @@ const Contact = () => {
     setIsSubmitting(true);
 
     try {
-      // Simulate form submission
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      const { error } = await supabase.from("contact_messages").insert([
+        {
+          name: formData.name.trim(),
+          email: formData.email.trim().toLowerCase(),
+          subject: formData.subject.trim(),
+          category: formData.category || null,
+          priority: formData.priority,
+          message: formData.message.trim(),
+          user_id: user?.id ?? null,
+        },
+      ]);
 
-      toast({
-        title: "Message sent successfully!",
-        description: "We'll get back to you within 24 hours. Check your email for a confirmation.",
-      });
+      if (error) {
+        console.error("Contact form error:", error);
+        toast({
+          variant: "destructive",
+          title: "Failed to send message",
+          description: "Please try again or contact us directly via phone or email.",
+        });
+      } else {
+        toast({
+          title: "Message sent successfully!",
+          description:
+            "Your message has been received by our support team. We'll get back to you within 24 hours at " +
+            formData.email.trim().toLowerCase() +
+            ".",
+        });
 
-      // Reset form
-      setFormData({
-        name: "",
-        email: "",
-        subject: "",
-        category: "",
-        message: "",
-        priority: "normal"
-      });
+        // Reset form
+        setFormData({
+          name: "",
+          email: "",
+          subject: "",
+          category: "",
+          message: "",
+          priority: "normal",
+        });
+      }
     } catch (error) {
+      console.error("Contact form error:", error);
       toast({
         variant: "destructive",
         title: "Failed to send message",

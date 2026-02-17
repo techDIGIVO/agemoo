@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
-import { Label } from "@/components/ui/label";
 import { Cookie, Settings, Shield, Eye } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -14,8 +13,31 @@ import { useAuth } from "@/hooks/useAuth";
 const Cookies = () => {
   const { toast } = useToast();
   const { user } = useAuth();
-  
+
+  // Controlled state for cookie preferences
+  const [analytics, setAnalytics] = useState(true);
+  const [marketing, setMarketing] = useState(true);
+  const [preference, setPreference] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
+
+  // Load saved preferences from localStorage on mount
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem('cookieConsent');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (typeof parsed.analytics === 'boolean') setAnalytics(parsed.analytics);
+        if (typeof parsed.marketing === 'boolean') setMarketing(parsed.marketing);
+        if (typeof parsed.cookie === 'boolean') setPreference(parsed.cookie);
+      }
+    } catch {
+      // Ignore parse errors, keep defaults
+    }
+  }, []);
+
   const saveConsent = async (consents: Record<string, boolean>) => {
+    setIsSaving(true);
+
     // Save to localStorage
     localStorage.setItem('cookieConsent', JSON.stringify({
       ...consents,
@@ -27,7 +49,7 @@ const Cookies = () => {
       try {
         const consentEntries = Object.entries(consents).map(([type, given]) => ({
           user_id: user.id,
-          consent_type: type as 'cookie' | 'marketing' | 'analytics' | 'essential',
+          consent_type: type,
           consent_given: given
         }));
         
@@ -43,7 +65,7 @@ const Cookies = () => {
       try {
         const consentEntries = Object.entries(consents).map(([type, given]) => ({
           session_id: sessionId,
-          consent_type: type as 'cookie' | 'marketing' | 'analytics' | 'essential',
+          consent_type: type,
           consent_given: given
         }));
         
@@ -52,6 +74,8 @@ const Cookies = () => {
         console.error('Failed to save consent to database:', error);
       }
     }
+
+    setIsSaving(false);
     
     // Show success message
     toast({
@@ -60,17 +84,38 @@ const Cookies = () => {
     });
   };
 
-  useEffect(() => {
-    const handleCookieSaved = () => {
-      toast({
-        title: "Cookie Preferences Saved",
-        description: "Your cookie preferences have been updated successfully.",
-      });
-    };
+  const handleSavePreferences = () => {
+    saveConsent({
+      essential: true,
+      analytics,
+      marketing,
+      cookie: preference,
+    });
+  };
 
-    window.addEventListener('cookie-saved', handleCookieSaved);
-    return () => window.removeEventListener('cookie-saved', handleCookieSaved);
-  }, [toast]);
+  const handleAcceptAll = () => {
+    setAnalytics(true);
+    setMarketing(true);
+    setPreference(true);
+    saveConsent({
+      essential: true,
+      analytics: true,
+      marketing: true,
+      cookie: true,
+    });
+  };
+
+  const handleRejectAll = () => {
+    setAnalytics(false);
+    setMarketing(false);
+    setPreference(false);
+    saveConsent({
+      essential: true,
+      analytics: false,
+      marketing: false,
+      cookie: false,
+    });
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -128,7 +173,7 @@ const Cookies = () => {
                         <h4 className="font-semibold mb-1">Analytics Cookies</h4>
                         <p className="text-sm text-muted-foreground">Help us understand how users interact with our platform</p>
                       </div>
-                      <Switch id="analytics" defaultChecked />
+                      <Switch checked={analytics} onCheckedChange={setAnalytics} />
                     </div>
 
                     <div className="flex items-center justify-between p-4 border rounded-lg">
@@ -136,7 +181,7 @@ const Cookies = () => {
                         <h4 className="font-semibold mb-1">Marketing Cookies</h4>
                         <p className="text-sm text-muted-foreground">Used to show relevant ads and measure campaign effectiveness</p>
                       </div>
-                      <Switch id="marketing" defaultChecked />
+                      <Switch checked={marketing} onCheckedChange={setMarketing} />
                     </div>
 
                     <div className="flex items-center justify-between p-4 border rounded-lg">
@@ -144,65 +189,30 @@ const Cookies = () => {
                         <h4 className="font-semibold mb-1">Preference Cookies</h4>
                         <p className="text-sm text-muted-foreground">Remember your settings and preferences</p>
                       </div>
-                      <Switch id="preference" defaultChecked />
+                      <Switch checked={preference} onCheckedChange={setPreference} />
                     </div>
                   </div>
 
                   <div className="flex gap-3 pt-6 border-t">
                     <Button 
-                      onClick={() => {
-                        // Get all switch states
-                        const analytics = (document.getElementById('analytics') as HTMLInputElement)?.checked;
-                        const marketing = (document.getElementById('marketing') as HTMLInputElement)?.checked;
-                        const preference = (document.getElementById('preference') as HTMLInputElement)?.checked;
-                        
-                        saveConsent({
-                          essential: true,
-                          analytics: analytics || false,
-                          marketing: marketing || false,
-                          cookie: preference || false
-                        });
-                      }}
+                      onClick={handleSavePreferences}
+                      disabled={isSaving}
                       className="flex-1"
                     >
-                      Save Preferences
+                      {isSaving ? "Saving..." : "Save Preferences"}
                     </Button>
                     <Button 
                       variant="outline"
-                      onClick={() => {
-                        // Set all switches to checked
-                        ['analytics', 'marketing', 'preference'].forEach(id => {
-                          const el = document.getElementById(id) as HTMLInputElement;
-                          if (el) el.checked = true;
-                        });
-                        
-                        saveConsent({
-                          essential: true,
-                          analytics: true,
-                          marketing: true,
-                          cookie: true
-                        });
-                      }}
+                      onClick={handleAcceptAll}
+                      disabled={isSaving}
                       className="flex-1"
                     >
                       Accept All
                     </Button>
                     <Button 
                       variant="destructive"
-                      onClick={() => {
-                        // Set all switches to unchecked except essential
-                        ['analytics', 'marketing', 'preference'].forEach(id => {
-                          const el = document.getElementById(id) as HTMLInputElement;
-                          if (el) el.checked = false;
-                        });
-                        
-                        saveConsent({
-                          essential: true,
-                          analytics: false,
-                          marketing: false,
-                          cookie: false
-                        });
-                      }}
+                      onClick={handleRejectAll}
+                      disabled={isSaving}
                       className="flex-1"
                     >
                       Reject All

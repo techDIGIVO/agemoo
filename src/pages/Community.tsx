@@ -9,11 +9,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { 
   Users, MessageCircle, Calendar, Trophy, Star, MapPin, Camera, 
-  TrendingUp, Heart, Share2, Bookmark, Search, Filter, Plus 
+  TrendingUp, Heart, Share2, Bookmark, Search, Filter, Plus, CheckCircle, Award 
 } from "lucide-react";
+import EventRegistrationDialog from "@/components/community/EventRegistrationDialog";
 
 const Community = () => {
   const [activeFilter, setActiveFilter] = useState("all");
+  const [eventDialog, setEventDialog] = useState<{ isOpen: boolean; event: any }>({ isOpen: false, event: null });
 
   const communityStats = [
     { label: "Active Members", value: "12,847", icon: Users, trend: "+15%" },
@@ -79,54 +81,72 @@ const Community = () => {
   const upcomingEvents = [
     {
       title: "Lagos Photography Workshop",
-      date: "March 15, 2024",
+      date: "April 12, 2026",
       time: "10:00 AM",
       location: "Victoria Island, Lagos",
       attendees: 45,
       type: "Workshop",
-      host: "Professional Photography Guild"
+      host: "Professional Photography Guild",
+      description: "Hands-on workshop covering advanced composition, natural lighting, and post-processing techniques. Open to all skill levels.",
+      spotsLeft: 15
     },
     {
       title: "Portrait Lighting Masterclass",
-      date: "March 22, 2024",
+      date: "April 19, 2026",
       time: "2:00 PM",
       location: "Online Event",
       attendees: 128,
       type: "Masterclass",
-      host: "Studio Masters Academy"
+      host: "Studio Masters Academy",
+      description: "Learn studio and natural portrait lighting setups used by top African fashion and editorial photographers.",
+      spotsLeft: 72
     },
     {
       title: "Equipment Showcase & Demo",
-      date: "March 28, 2024",
+      date: "April 26, 2026",
       time: "11:00 AM",
       location: "Abuja Photography Hub",
       attendees: 67,
       type: "Demo",
-      host: "Camera Equipment Nigeria"
+      host: "Camera Equipment Nigeria",
+      description: "Get hands-on with the latest cameras, lenses, and lighting gear. Meet vendors and take advantage of exclusive demo-day discounts.",
+      spotsLeft: 33
     }
   ];
 
-  const topContributors = [
+  const communityChampions = [
     {
       name: "Emmanuel Okafor",
       avatar: "EO",
-      points: 2847,
-      badge: "Expert Contributor",
-      specialty: "Wedding Photography"
+      specialty: "Wedding Photography",
+      badge: "Top Rated",
+      verified: true,
+      completedBookings: 184,
+      rating: 4.9,
+      location: "Lagos, Nigeria",
+      achievement: "Most booked wedding photographer in Lagos with a 4.9 average rating"
     },
     {
       name: "Fatima Aliyu",
       avatar: "FA",
-      points: 2156,
+      specialty: "Fashion Photography",
       badge: "Rising Star",
-      specialty: "Fashion Photography"
+      verified: true,
+      completedBookings: 92,
+      rating: 4.8,
+      location: "Abuja, Nigeria",
+      achievement: "Fastest-growing portfolio with 92 bookings in under 12 months"
     },
     {
       name: "David Adebayo",
       avatar: "DA",
-      points: 1923,
+      specialty: "Commercial Photography",
       badge: "Mentor",
-      specialty: "Commercial Photography"
+      verified: true,
+      completedBookings: 156,
+      rating: 4.7,
+      location: "Accra, Ghana",
+      achievement: "Active community mentor — helped onboard 40+ new photographers"
     }
   ];
 
@@ -216,7 +236,7 @@ const Community = () => {
                 <TabsTrigger value="feed">Community Feed</TabsTrigger>
                 <TabsTrigger value="events">Events</TabsTrigger>
                 <TabsTrigger value="discussions">Discussions</TabsTrigger>
-                <TabsTrigger value="members">Top Members</TabsTrigger>
+                <TabsTrigger value="members">Champions</TabsTrigger>
               </TabsList>
 
               <TabsContent value="feed" className="mt-12">
@@ -311,20 +331,26 @@ const Community = () => {
 
                     {/* Top Contributors */}
                     <Card className="p-6">
-                      <h3 className="font-semibold mb-4">Top Contributors</h3>
+                      <h3 className="font-semibold mb-4">Community Champions</h3>
                       <div className="space-y-4">
-                        {topContributors.map((contributor, index) => (
+                        {communityChampions.map((champion, index) => (
                           <div key={index} className="flex items-center space-x-3">
                             <Avatar className="w-8 h-8">
-                              <AvatarFallback className="text-xs">{contributor.avatar}</AvatarFallback>
+                              <AvatarFallback className="text-xs">{champion.avatar}</AvatarFallback>
                             </Avatar>
                             <div className="flex-1">
-                              <p className="font-medium text-sm">{contributor.name}</p>
-                              <p className="text-xs text-muted-foreground">{contributor.specialty}</p>
+                              <div className="flex items-center gap-1">
+                                <p className="font-medium text-sm">{champion.name}</p>
+                                {champion.verified && <CheckCircle className="w-3 h-3 text-primary" />}
+                              </div>
+                              <p className="text-xs text-muted-foreground">{champion.specialty}</p>
                             </div>
                             <div className="text-right">
-                              <p className="text-sm font-medium">{contributor.points}</p>
-                              <Badge variant="outline" className="text-xs">{contributor.badge}</Badge>
+                              <div className="flex items-center gap-1 text-sm">
+                                <Star className="w-3 h-3 text-yellow-400" />
+                                <span className="font-medium">{champion.rating}</span>
+                              </div>
+                              <Badge variant="outline" className="text-xs">{champion.badge}</Badge>
                             </div>
                           </div>
                         ))}
@@ -367,13 +393,14 @@ const Community = () => {
                           <Badge>{event.type}</Badge>
                           <div className="flex items-center text-sm text-muted-foreground">
                             <Users className="w-4 h-4 mr-1" />
-                            {event.attendees}
+                            {event.attendees} attending
                           </div>
                         </div>
                         <CardTitle className="text-lg">{event.title}</CardTitle>
                         <CardDescription>Hosted by {event.host}</CardDescription>
                       </CardHeader>
                       <CardContent>
+                        <p className="text-sm text-muted-foreground mb-4">{event.description}</p>
                         <div className="space-y-3">
                           <div className="flex items-center text-sm">
                             <Calendar className="w-4 h-4 mr-2 text-muted-foreground" />
@@ -384,7 +411,10 @@ const Community = () => {
                             <span>{event.location}</span>
                           </div>
                         </div>
-                        <Button className="w-full mt-4">Register</Button>
+                        <div className="flex items-center justify-between mt-4">
+                          <span className="text-xs text-muted-foreground">{event.spotsLeft} spots left</span>
+                          <Button onClick={() => setEventDialog({ isOpen: true, event })}>Register Now</Button>
+                        </div>
                       </CardContent>
                     </Card>
                   ))}
@@ -420,23 +450,54 @@ const Community = () => {
               <TabsContent value="members" className="mt-12">
                 <div className="text-center mb-12">
                   <h2 className="text-3xl font-bold mb-4">Community Champions</h2>
-                  <p className="text-muted-foreground">Meet our most active and helpful community members</p>
+                  <p className="text-muted-foreground max-w-2xl mx-auto">
+                    Our champions are verified professionals recognised for outstanding work — selected based on completed bookings, client ratings, and contributions to the community.
+                  </p>
+                </div>
+
+                {/* Criteria Legend */}
+                <div className="flex flex-wrap justify-center gap-6 mb-10 text-sm text-muted-foreground">
+                  <div className="flex items-center gap-1.5">
+                    <Award className="w-4 h-4 text-primary" />
+                    <span>Verified Professional</span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <Star className="w-4 h-4 text-yellow-400" />
+                    <span>4.5+ Client Rating</span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <Calendar className="w-4 h-4 text-primary" />
+                    <span>50+ Completed Bookings</span>
+                  </div>
                 </div>
 
                 <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {topContributors.map((member, index) => (
+                  {communityChampions.map((member, index) => (
                     <Card key={index} className="p-6 text-center">
-                      <Avatar className="w-16 h-16 mx-auto mb-4">
-                        <AvatarFallback className="text-lg">{member.avatar}</AvatarFallback>
-                      </Avatar>
-                      <h3 className="font-semibold mb-2">{member.name}</h3>
-                      <p className="text-sm text-muted-foreground mb-3">{member.specialty}</p>
-                      <Badge className="mb-3">{member.badge}</Badge>
-                      <div className="flex items-center justify-center space-x-1 text-sm text-muted-foreground">
-                        <Star className="w-4 h-4 text-yellow-400" />
-                        <span>{member.points} points</span>
+                      <div className="relative inline-block">
+                        <Avatar className="w-16 h-16 mx-auto mb-4">
+                          <AvatarFallback className="text-lg">{member.avatar}</AvatarFallback>
+                        </Avatar>
+                        {member.verified && (
+                          <CheckCircle className="w-5 h-5 text-primary absolute -right-1 bottom-3 bg-background rounded-full" />
+                        )}
                       </div>
-                      <Button variant="outline" className="w-full mt-4">
+                      <h3 className="font-semibold mb-1">{member.name}</h3>
+                      <p className="text-sm text-muted-foreground mb-1">{member.specialty}</p>
+                      <p className="text-xs text-muted-foreground mb-3">{member.location}</p>
+                      <Badge className="mb-3">{member.badge}</Badge>
+                      <div className="flex items-center justify-center gap-4 text-sm text-muted-foreground mb-2">
+                        <div className="flex items-center gap-1">
+                          <Star className="w-4 h-4 text-yellow-400" />
+                          <span className="font-medium">{member.rating}</span>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <Calendar className="w-4 h-4" />
+                          <span>{member.completedBookings} bookings</span>
+                        </div>
+                      </div>
+                      <p className="text-xs text-muted-foreground italic mb-4">{member.achievement}</p>
+                      <Button variant="outline" className="w-full">
                         View Profile
                       </Button>
                     </Card>
@@ -468,6 +529,12 @@ const Community = () => {
         </section>
       </main>
       <Footer />
+
+      <EventRegistrationDialog
+        open={eventDialog.isOpen}
+        onOpenChange={(open) => setEventDialog({ isOpen: open, event: open ? eventDialog.event : null })}
+        event={eventDialog.event}
+      />
     </div>
   );
 };

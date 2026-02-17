@@ -10,46 +10,39 @@ import { ArrowLeft, Star, MapPin, Clock, DollarSign, Calendar, MessageCircle, He
 import { supabase } from "@/integrations/supabase/client";
 import { SaveButton } from "@/components/marketplace/SaveButton";
 import { MessageButton } from "@/components/marketplace/MessageButton";
+import { BookingDialog } from "@/components/booking/BookingDialog";
+import { useToast } from "@/hooks/use-toast";
 
 const ServiceDetail = () => {
   const { slug } = useParams();
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [service, setService] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [bookingDialog, setBookingDialog] = useState(false);
 
   useEffect(() => {
     const fetchService = async () => {
       if (!slug) return;
       
-      // Try to fetch by slug first, if not found, try by ID (for backward compatibility)
+      // Try to fetch by ID or slug from Supabase
       let data, error;
       
-      // Check if slug is a number (old ID-based URLs)
       if (!isNaN(Number(slug))) {
-        // For demo, use mock data based on ID
-        setService({
-          id: slug,
-          title: "Professional Photography Service",
-          category: "Portrait Photography",
-          price: "45,000",
-          rating: 4.9,
-          reviews: 127,
-          location: "Lagos, Nigeria",
-          duration: "2-3 hours",
-          description: "Professional photography service with years of experience capturing beautiful moments.",
-          vendor_id: `vendor-${slug}`,
-          image_url: "https://images.unsplash.com/photo-1531123897727-8f129e1688ce?w=400&h=300&fit=crop"
-        });
-        setLoading(false);
-        return;
+        // Numeric slug — try fetching by ID
+        ({ data, error } = await supabase
+          .from('services')
+          .select('*, profiles:vendor_id (id, name, avatar_url, location)')
+          .eq('id', slug)
+          .maybeSingle());
+      } else {
+        // Otherwise fetch from database by slug
+        ({ data, error } = await supabase
+          .from('services')
+          .select('*, profiles:vendor_id (id, name, avatar_url, location)')
+          .eq('slug', slug)
+          .maybeSingle());
       }
-      
-      // Otherwise fetch from database by slug
-      ({ data, error } = await supabase
-        .from('services')
-        .select('*')
-        .eq('slug', slug)
-        .maybeSingle());
 
       if (error) {
         console.error('Error fetching service:', error);
@@ -195,15 +188,41 @@ const ServiceDetail = () => {
                     <Button 
                       className="w-full" 
                       size="lg"
+                      onClick={() => {
+                        if (!service.vendor_id) {
+                          toast({
+                            title: "Demo Listing",
+                            description: "This is a sample listing. Sign up as a vendor to create real bookable services.",
+                          });
+                          return;
+                        }
+                        setBookingDialog(true);
+                      }}
                     >
                       <Calendar className="w-4 h-4 mr-2" />
                       Book Now
                     </Button>
-                    <MessageButton 
-                      vendorId={service.vendor_id || service.id}
-                      variant="outline"
-                      className="w-full"
-                    />
+                    {service.vendor_id ? (
+                      <MessageButton 
+                        vendorId={service.vendor_id}
+                        variant="outline"
+                        className="w-full"
+                      />
+                    ) : (
+                      <Button
+                        variant="outline"
+                        className="w-full"
+                        onClick={() => {
+                          toast({
+                            title: "Demo Listing",
+                            description: "This is a sample listing. Messaging is available for real vendor profiles.",
+                          });
+                        }}
+                      >
+                        <MessageCircle className="w-4 h-4 mr-2" />
+                        Message
+                      </Button>
+                    )}
                   </div>
 
                   <div className="pt-4 border-t space-y-3 text-sm">
@@ -223,6 +242,23 @@ const ServiceDetail = () => {
         </div>
       </main>
       <Footer />
+
+      {service && service.vendor_id && (
+        <BookingDialog
+          isOpen={bookingDialog}
+          onClose={() => setBookingDialog(false)}
+          service={{
+            id: service.id,
+            title: service.title,
+            vendor: service.vendor_name || "Photographer",
+            vendorId: service.vendor_id,
+            price: `₦${service.price}`,
+            category: service.category,
+            image_url: service.image_url,
+            duration: service.duration,
+          }}
+        />
+      )}
     </>
   );
 };

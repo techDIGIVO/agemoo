@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Bookmark } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -24,6 +24,31 @@ export const SaveButton = ({
   const { toast } = useToast();
   const [isSaved, setIsSaved] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+
+  // Check if the item is already saved when component mounts or user/item changes
+  useEffect(() => {
+    const checkSavedStatus = async () => {
+      if (!user || !itemId) return;
+
+      try {
+        const { data, error } = await supabase
+          .from('user_saves')
+          .select('id')
+          .eq('user_id', user.id)
+          .eq('item_type', itemType)
+          .eq('item_id', itemId)
+          .maybeSingle();
+
+        if (!error && data) {
+          setIsSaved(true);
+        }
+      } catch (error) {
+        // Silently fail — default to unsaved
+      }
+    };
+
+    checkSavedStatus();
+  }, [user, itemType, itemId]);
 
   const handleToggleSave = async (e: React.MouseEvent) => {
     e.stopPropagation(); // Prevent card click

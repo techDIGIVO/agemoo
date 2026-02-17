@@ -1,3 +1,4 @@
+import { useState, useRef } from "react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
@@ -8,8 +9,16 @@ import {
   Briefcase, MapPin, Clock, DollarSign, Users, TrendingUp, 
   Heart, Coffee, Laptop, Globe, Star, ArrowRight 
 } from "lucide-react";
+import JobApplicationDialog from "@/components/careers/JobApplicationDialog";
 
 const Careers = () => {
+  const [applicationDialog, setApplicationDialog] = useState<{ isOpen: boolean; position: any }>({ isOpen: false, position: null });
+  const positionsRef = useRef<HTMLElement>(null);
+
+  const scrollToPositions = () => {
+    positionsRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
+
   const openPositions = [
     {
       title: "Senior Full Stack Developer",
@@ -162,10 +171,10 @@ const Careers = () => {
               individuals who want to empower creative professionals worldwide.
             </p>
             <div className="flex flex-wrap justify-center gap-4">
-              <Button size="lg">
+              <Button size="lg" onClick={scrollToPositions}>
                 View Open Positions
               </Button>
-              <Button variant="outline" size="lg">
+              <Button variant="outline" size="lg" onClick={scrollToPositions}>
                 Learn About Culture
               </Button>
             </div>
@@ -237,7 +246,7 @@ const Careers = () => {
         </section>
 
         {/* Open Positions */}
-        <section className="py-16 bg-muted/50">
+        <section ref={positionsRef} className="py-16 bg-muted/50">
           <div className="container mx-auto px-4">
             <div className="text-center mb-12">
               <h2 className="text-3xl font-bold mb-4">Open Positions</h2>
@@ -288,7 +297,7 @@ const Careers = () => {
                     </div>
                     
                     <div className="mt-4 md:mt-0 md:ml-6">
-                      <Button>
+                      <Button onClick={() => setApplicationDialog({ isOpen: true, position })}>
                         Apply Now
                         <ArrowRight className="w-4 h-4 ml-2" />
                       </Button>
@@ -389,10 +398,20 @@ const Careers = () => {
               Send us your resume and let us know how you'd like to contribute.
             </p>
             <div className="flex flex-wrap justify-center gap-4">
-              <Button size="lg">
+              <Button size="lg" onClick={scrollToPositions}>
                 View All Positions
               </Button>
-              <Button variant="outline" size="lg">
+              <Button variant="outline" size="lg" onClick={() => setApplicationDialog({
+                isOpen: true,
+                position: {
+                  title: "General Application",
+                  department: "Open",
+                  location: "Remote / Nigeria",
+                  type: "Full-time",
+                  experience: "Any level",
+                  salary: "Competitive"
+                }
+              })}>
                 Send General Application
               </Button>
             </div>
@@ -400,6 +419,12 @@ const Careers = () => {
         </section>
       </main>
       <Footer />
+
+      <JobApplicationDialog
+        open={applicationDialog.isOpen}
+        onOpenChange={(open) => setApplicationDialog({ isOpen: open, position: open ? applicationDialog.position : null })}
+        position={applicationDialog.position}
+      />
     </div>
   );
 };
