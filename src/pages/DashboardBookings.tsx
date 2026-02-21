@@ -84,17 +84,17 @@ const DashboardBookings = () => {
               >
                 <ArrowLeft className="w-5 h-5" />
               </Button>
-              <h1 className="text-3xl font-bold">{t('bookings.myBookings')}</h1>
+              <h1 className="text-2xl sm:text-3xl font-bold">{t('bookings.myBookings')}</h1>
             </div>
           </div>
 
           <Tabs value={activeTab} onValueChange={setActiveTab}>
-            <TabsList className="mb-6">
-              <TabsTrigger value="all">{t('bookings.all')}</TabsTrigger>
-              <TabsTrigger value="upcoming">{t('bookings.upcoming')}</TabsTrigger>
-              <TabsTrigger value="past">{t('bookings.past')}</TabsTrigger>
-              <TabsTrigger value="pending">{t('dashboard.status.pending')}</TabsTrigger>
-              <TabsTrigger value="confirmed">{t('dashboard.status.confirmed')}</TabsTrigger>
+            <TabsList className="flex w-full overflow-x-auto mb-6">
+              <TabsTrigger value="all" className="flex-shrink-0">{t('bookings.all')}</TabsTrigger>
+              <TabsTrigger value="upcoming" className="flex-shrink-0">{t('bookings.upcoming')}</TabsTrigger>
+              <TabsTrigger value="past" className="flex-shrink-0">{t('bookings.past')}</TabsTrigger>
+              <TabsTrigger value="pending" className="flex-shrink-0">{t('dashboard.status.pending')}</TabsTrigger>
+              <TabsTrigger value="confirmed" className="flex-shrink-0">{t('dashboard.status.confirmed')}</TabsTrigger>
             </TabsList>
 
             <TabsContent value={activeTab}>
@@ -121,9 +121,9 @@ const DashboardBookings = () => {
               ) : (
                 <div className="space-y-4">
                   {filteredBookings.map((booking) => (
-                    <Card key={booking.id} className="p-6">
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1">
+                    <Card key={booking.id} className="p-4 sm:p-6">
+                      <div className="flex flex-col sm:flex-row items-start sm:justify-between gap-4">
+                        <div className="flex-1 min-w-0">
                           <div className="flex items-center space-x-3 mb-2">
                             <h3 className="text-lg font-semibold">{t('bookings.bookingId')}{booking.id.slice(0, 8)}</h3>
                             <Badge className={getStatusColor(booking.status)}>
@@ -164,8 +164,8 @@ const DashboardBookings = () => {
                           </div>
                         </div>
                         
-                        <div className="text-right">
-                          <p className="text-2xl font-bold text-primary mb-4">
+                        <div className="text-left sm:text-right flex-shrink-0">
+                          <p className="text-xl sm:text-2xl font-bold text-primary mb-2 sm:mb-4">
                             ₦{booking.total_price.toLocaleString()}
                           </p>
                           <Button

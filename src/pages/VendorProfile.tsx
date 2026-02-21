@@ -143,17 +143,16 @@ const VendorProfile = () => {
           </Button>
 
           {/* Vendor Header */}
-          <Card className="p-8 mb-8">
-            <div className="flex items-start justify-between">
-              <div className="flex items-start space-x-6">
-                <Avatar className="w-24 h-24">
-                  <AvatarFallback className="text-2xl">
-                    {vendor.name.split(' ').map((n: string) => n[0]).join('')}
-                  </AvatarFallback>
-                </Avatar>
-                <div>
-                  <h1 className="text-3xl font-bold mb-2">{vendor.name}</h1>
-                  <div className="flex items-center space-x-4 text-muted-foreground mb-3">
+          <Card className="p-4 sm:p-8 mb-8">
+            <div className="flex flex-col sm:flex-row items-start gap-4 sm:gap-6">
+              <Avatar className="w-20 h-20 sm:w-24 sm:h-24 flex-shrink-0">
+                <AvatarFallback className="text-xl sm:text-2xl">
+                  {vendor.name.split(' ').map((n: string) => n[0]).join('')}
+                </AvatarFallback>
+              </Avatar>
+              <div className="min-w-0">
+                <h1 className="text-2xl sm:text-3xl font-bold mb-2">{vendor.name}</h1>
+                <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-muted-foreground mb-3">
                     {vendor.profession && (
                       <Badge variant="secondary">{vendor.profession}</Badge>
                     )}
@@ -163,7 +162,7 @@ const VendorProfile = () => {
                     </div>
                   </div>
                   <p className="text-muted-foreground max-w-2xl">{vendor.bio}</p>
-                  <div className="mt-4 flex items-center space-x-3">
+                <div className="mt-4 flex items-center space-x-3">
                     <MessageButton 
                       vendorId={vendorId || ''}
                       vendorName={vendor.name}
@@ -172,24 +171,23 @@ const VendorProfile = () => {
                       <Share2 className="w-4 h-4" />
                     </Button>
                   </div>
-                </div>
               </div>
             </div>
           </Card>
 
           {/* Vendor Listings */}
           <Tabs defaultValue="services">
-            <TabsList>
-              <TabsTrigger value="services">
-                <Camera className="w-4 h-4 mr-2" />
-                Services ({services.length})
+            <TabsList className="flex w-full overflow-x-auto">
+              <TabsTrigger value="services" className="flex-shrink-0">
+                <Camera className="w-4 h-4 mr-1 sm:mr-2" />
+                <span className="hidden sm:inline">Services</span> ({services.length})
               </TabsTrigger>
-              <TabsTrigger value="gear">
-                <Package className="w-4 h-4 mr-2" />
-                Gear ({gear.length})
+              <TabsTrigger value="gear" className="flex-shrink-0">
+                <Package className="w-4 h-4 mr-1 sm:mr-2" />
+                <span className="hidden sm:inline">Gear</span> ({gear.length})
               </TabsTrigger>
-              <TabsTrigger value="about">About</TabsTrigger>
-              <TabsTrigger value="reviews">Reviews</TabsTrigger>
+              <TabsTrigger value="about" className="flex-shrink-0">About</TabsTrigger>
+              <TabsTrigger value="reviews" className="flex-shrink-0">Reviews</TabsTrigger>
             </TabsList>
 
             <TabsContent value="services" className="mt-6">

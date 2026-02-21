@@ -203,14 +203,14 @@ const ProfileSettings = () => {
       <Header />
       <main className="flex-1 py-12 bg-muted/20">
         <div className="container max-w-5xl mx-auto px-4">
-          <div className="mb-8 flex items-center justify-between">
+          <div className="mb-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div className="flex items-center space-x-4">
               <Button variant="ghost" size="icon" onClick={() => navigate('/dashboard')}>
                 <ArrowLeft className="w-5 h-5" />
               </Button>
-              <h1 className="text-3xl font-bold">Edit Profile</h1>
+              <h1 className="text-2xl sm:text-3xl font-bold">Edit Profile</h1>
             </div>
-            <Button onClick={handleSave} disabled={isLoading} className="shadow-soft">
+            <Button onClick={handleSave} disabled={isLoading} className="shadow-soft w-full sm:w-auto">
               <Save className="w-4 h-4 mr-2" />
               {isLoading ? "Saving..." : "Save Changes"}
             </Button>
@@ -218,13 +218,13 @@ const ProfileSettings = () => {
           
           <div className="grid lg:grid-cols-2 gap-8">
             {/* Basic Information */}
-            <Card className="p-8">
+            <Card className="p-4 sm:p-8">
               <h3 className="text-xl font-semibold mb-6 flex items-center">
                 <User className="w-5 h-5 mr-2 text-primary" />
                 Basic Information
               </h3>
               <div className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="firstName">First Name</Label>
                     <Input 
@@ -285,7 +285,7 @@ const ProfileSettings = () => {
             </Card>
 
             {/* Professional Details */}
-            <Card className="p-8">
+            <Card className="p-4 sm:p-8">
               <h3 className="text-xl font-semibold mb-6 flex items-center">
                 <Camera className="w-5 h-5 mr-2 text-primary" />
                 Professional Details
@@ -353,8 +353,8 @@ const ProfileSettings = () => {
           </div>
           
           {/* Portfolio Section */}
-          <Card className="p-8 mt-8">
-            <div className="flex items-center justify-between mb-6">
+          <Card className="p-4 sm:p-8 mt-8">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
               <div>
                 <h3 className="text-xl font-semibold">Portfolio Gallery</h3>
                 <p className="text-sm text-muted-foreground">Upload high-quality images of your best work.</p>

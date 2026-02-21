@@ -179,8 +179,8 @@ const DashboardSaved = () => {
                 <ArrowLeft className="w-5 h-5" />
               </Button>
               <div>
-                <h1 className="text-3xl font-bold flex items-center">
-                  <Bookmark className="w-8 h-8 mr-3 text-primary" />
+                <h1 className="text-2xl sm:text-3xl font-bold flex items-center">
+                  <Bookmark className="w-6 h-6 sm:w-8 sm:h-8 mr-2 sm:mr-3 text-primary" />
                   Saved Items
                 </h1>
                 <p className="text-muted-foreground mt-1">
@@ -208,21 +208,21 @@ const DashboardSaved = () => {
             </Card>
           ) : (
             <Tabs value={activeTab} onValueChange={setActiveTab}>
-              <TabsList>
-                <TabsTrigger value="all">
+              <TabsList className="flex w-full overflow-x-auto">
+                <TabsTrigger value="all" className="flex-shrink-0">
                   All ({savedItems.length})
                 </TabsTrigger>
-                <TabsTrigger value="service">
-                  <Camera className="w-4 h-4 mr-2" />
-                  Services ({savedItems.filter(i => i.item_type === 'service').length})
+                <TabsTrigger value="service" className="flex-shrink-0">
+                  <Camera className="w-4 h-4 mr-1 sm:mr-2" />
+                  <span className="hidden sm:inline">Services</span> ({savedItems.filter(i => i.item_type === 'service').length})
                 </TabsTrigger>
-                <TabsTrigger value="gear">
-                  <Package className="w-4 h-4 mr-2" />
-                  Gear ({savedItems.filter(i => i.item_type === 'gear').length})
+                <TabsTrigger value="gear" className="flex-shrink-0">
+                  <Package className="w-4 h-4 mr-1 sm:mr-2" />
+                  <span className="hidden sm:inline">Gear</span> ({savedItems.filter(i => i.item_type === 'gear').length})
                 </TabsTrigger>
-                <TabsTrigger value="vendor">
-                  <Users className="w-4 h-4 mr-2" />
-                  Vendors ({savedItems.filter(i => i.item_type === 'vendor').length})
+                <TabsTrigger value="vendor" className="flex-shrink-0">
+                  <Users className="w-4 h-4 mr-1 sm:mr-2" />
+                  <span className="hidden sm:inline">Vendors</span> ({savedItems.filter(i => i.item_type === 'vendor').length})
                 </TabsTrigger>
               </TabsList>
 

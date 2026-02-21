@@ -179,7 +179,7 @@ const DashboardProfile = () => {
           </div>
 
           <form onSubmit={handleSave}>
-            <Card className="p-8 space-y-8">
+            <Card className="p-4 sm:p-8 space-y-8">
               {/* Avatar Section */}
               <div className="flex flex-col items-center space-y-4">
                 <Avatar className="w-32 h-32">

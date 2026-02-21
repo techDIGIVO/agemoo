@@ -341,13 +341,13 @@ const Dashboard = () => {
           </div>
 
           <Tabs value={activeTab} onValueChange={setActiveTab}>
-            <TabsList className="grid w-full grid-cols-6 mb-8">
-              <TabsTrigger value="overview">{t('dashboard.overview')}</TabsTrigger>
-              <TabsTrigger value="bookings">{t('dashboard.bookings')}</TabsTrigger>
-              <TabsTrigger value="calendar">{t('dashboard.calendar')}</TabsTrigger>
-              <TabsTrigger value="services">{t('dashboard.services')}</TabsTrigger>
-              <TabsTrigger value="profile">{t('dashboard.profile')}</TabsTrigger>
-              <TabsTrigger value="settings">{t('dashboard.settings')}</TabsTrigger>
+            <TabsList className="flex w-full overflow-x-auto mb-8">
+              <TabsTrigger value="overview" className="flex-shrink-0">{t('dashboard.overview')}</TabsTrigger>
+              <TabsTrigger value="bookings" className="flex-shrink-0">{t('dashboard.bookings')}</TabsTrigger>
+              <TabsTrigger value="calendar" className="flex-shrink-0">{t('dashboard.calendar')}</TabsTrigger>
+              <TabsTrigger value="services" className="flex-shrink-0">{t('dashboard.services')}</TabsTrigger>
+              <TabsTrigger value="profile" className="flex-shrink-0">{t('dashboard.profile')}</TabsTrigger>
+              <TabsTrigger value="settings" className="flex-shrink-0">{t('dashboard.settings')}</TabsTrigger>
             </TabsList>
 
             <TabsContent value="overview">
@@ -386,9 +386,9 @@ const Dashboard = () => {
 
             <TabsContent value="bookings" className="space-y-6">
               <Card className="p-6">
-                <div className="flex items-center justify-between mb-6">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
                   <h3 className="text-lg font-semibold">{t('dashboard.manageBookings')}</h3>
-                  <div className="flex space-x-2">
+                  <div className="flex flex-wrap gap-2">
                     <Select value={bookingStatusFilter} onValueChange={setBookingStatusFilter}>
                       <SelectTrigger className="w-40"><SelectValue placeholder={t('common.filter')} /></SelectTrigger>
                       <SelectContent>
@@ -549,13 +549,13 @@ const Dashboard = () => {
 
             <TabsContent value="calendar">
               <Card className="p-8">
-                <div className="flex justify-between items-center mb-6">
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
                   <h3 className="text-xl font-bold">Schedule</h3>
                   <div className="flex gap-2">
-                    <Button variant="outline" onClick={() => toast({ title: "Coming Soon", description: "Google Calendar sync is coming soon!" })}>
+                    <Button variant="outline" size="sm" onClick={() => toast({ title: "Coming Soon", description: "Google Calendar sync is coming soon!" })}>
                       Sync Calendar
                     </Button>
-                    <Button onClick={() => setAvailabilityDialog(true)}>Add Slot</Button>
+                    <Button size="sm" onClick={() => setAvailabilityDialog(true)}>Add Slot</Button>
                   </div>
                 </div>
                 
@@ -703,8 +703,8 @@ const Dashboard = () => {
             </TabsContent>
 
             <TabsContent value="settings">
-              <div className="grid lg:grid-cols-2 gap-6">
-                <Card className="p-6">
+              <div className="grid md:grid-cols-2 gap-6">
+                <Card className="p-4 sm:p-6">
                   <h3 className="text-lg font-semibold mb-4">{t('settings.account')}</h3>
                   <div className="space-y-4">
                     <div className="flex items-center justify-between">
@@ -738,7 +738,7 @@ const Dashboard = () => {
                   </div>
                 </Card>
 
-                <Card className="p-6">
+                <Card className="p-4 sm:p-6">
                   <h3 className="text-lg font-semibold mb-4">{t('settings.payment')}</h3>
                   <div className="space-y-4">
                     <div>
