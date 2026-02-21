@@ -145,7 +145,7 @@ const Messages = () => {
       <Header />
       <main className="min-h-screen py-20">
         <div className="container mx-auto px-4">
-          <div className="mb-6 flex items-center justify-between">
+          <div className="mb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div className="flex items-center space-x-4">
               <Button
                 variant="ghost"
@@ -154,7 +154,7 @@ const Messages = () => {
               >
                 <ArrowLeft className="w-5 h-5" />
               </Button>
-              <h1 className="text-3xl font-bold">Messages</h1>
+              <h1 className="text-2xl sm:text-3xl font-bold">Messages</h1>
             </div>
             <Button onClick={() => setIsNewMessageOpen(true)}>
               <Plus className="w-4 h-4 mr-2" /> New Message
@@ -174,7 +174,7 @@ const Messages = () => {
                 </div>
               </div>
 
-              <ScrollArea className="h-[600px]">
+              <ScrollArea className="h-[300px] lg:h-[600px]">
                 <div className="space-y-2">
                   {loading ? (
                     <div className="text-center py-8 text-muted-foreground">
@@ -227,7 +227,7 @@ const Messages = () => {
             {/* Messages Panel */}
             <Card className="lg:col-span-2">
               {selectedConversation ? (
-                <div className="flex flex-col h-[670px]">
+                <div className="flex flex-col h-[400px] lg:h-[670px]">
                   {/* Header */}
                   <div className="p-4 border-b">
                     <div className="flex items-center space-x-3">
@@ -289,7 +289,7 @@ const Messages = () => {
                   </div>
                 </div>
               ) : (
-                <div className="h-[670px] flex items-center justify-center text-muted-foreground">
+                <div className="h-[400px] lg:h-[670px] flex items-center justify-center text-muted-foreground">
                   <div className="text-center">
                     <p className="text-lg mb-2">Select a conversation</p>
                     <p className="text-sm">Choose a conversation from the list to start messaging</p>

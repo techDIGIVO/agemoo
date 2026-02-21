@@ -117,8 +117,8 @@ const GearDetail = () => {
                 <div className="flex items-start justify-between mb-4">
                   <div className="flex-1">
                     <Badge className="mb-2">{gear.category}</Badge>
-                    <h1 className="text-4xl font-bold mb-2">{gear.title}</h1>
-                    <div className="flex items-center space-x-4 text-muted-foreground">
+                    <h1 className="text-2xl sm:text-4xl font-bold mb-2">{gear.title}</h1>
+                    <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-muted-foreground">
                       <div className="flex items-center">
                         <Star className="w-4 h-4 fill-primary text-primary mr-1" />
                         <span>{gear.rating || 0} ({gear.reviews_count || 0} reviews)</span>
@@ -173,11 +173,11 @@ const GearDetail = () => {
 
             {/* Rental Sidebar */}
             <div className="lg:col-span-1">
-              <Card className="p-6 sticky top-20">
+              <Card className="p-4 sm:p-6 sticky top-20">
                 <div className="space-y-4">
                   <div>
                     <div className="flex items-baseline">
-                      <span className="text-3xl font-bold">₦{gear.price_per_day.toLocaleString()}</span>
+                      <span className="text-2xl sm:text-3xl font-bold">₦{gear.price_per_day.toLocaleString()}</span>
                       <span className="text-muted-foreground ml-2">/ day</span>
                     </div>
                   </div>

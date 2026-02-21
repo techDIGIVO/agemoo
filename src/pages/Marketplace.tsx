@@ -550,10 +550,10 @@ const Marketplace = () => {
               {/* Content Side */}
               <div className="space-y-8">
                 <div>
-                  <h2 className="text-4xl font-bold mb-4">
+                  <h2 className="text-2xl sm:text-4xl font-bold mb-4">
                     {t('marketplace.joinPlatform')} <span className="text-gradient">{t('marketplace.photographyPlatform')}</span>
                   </h2>
-                  <p className="text-xl text-muted-foreground mb-6">
+                  <p className="text-lg sm:text-xl text-muted-foreground mb-6">
                     {t('marketplace.vendorDescription')}
                   </p>
                 </div>
@@ -596,11 +596,11 @@ const Marketplace = () => {
         <section className="py-16">
           <div className="container mx-auto px-4">
             <Tabs defaultValue="featured" className="w-full">
-              <TabsList className="grid w-full grid-cols-4">
-                <TabsTrigger value="featured">{t('marketplace.featured')}</TabsTrigger>
-                <TabsTrigger value="services">{t('marketplace.topServices')}</TabsTrigger>
-                <TabsTrigger value="gear">{t('marketplace.popularGear')}</TabsTrigger>
-                <TabsTrigger value="vendors">{t('marketplace.topVendors')}</TabsTrigger>
+              <TabsList className="flex w-full overflow-x-auto">
+                <TabsTrigger value="featured" className="flex-shrink-0">{t('marketplace.featured')}</TabsTrigger>
+                <TabsTrigger value="services" className="flex-shrink-0">{t('marketplace.topServices')}</TabsTrigger>
+                <TabsTrigger value="gear" className="flex-shrink-0">{t('marketplace.popularGear')}</TabsTrigger>
+                <TabsTrigger value="vendors" className="flex-shrink-0">{t('marketplace.topVendors')}</TabsTrigger>
               </TabsList>
               
               <TabsContent value="featured" className="mt-8">
@@ -742,9 +742,9 @@ const Marketplace = () => {
               
               <TabsContent value="services" className="mt-8">
                 <div className="space-y-6">
-                  <div className="flex items-center justify-between">
-                    <h3 className="text-2xl font-semibold">{t('marketplace.topServicesMonth')}</h3>
-                    <Button variant="outline" onClick={() => navigate("/services")}>{t('marketplace.viewAll')}</Button>
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                    <h3 className="text-xl sm:text-2xl font-semibold">{t('marketplace.topServicesMonth')}</h3>
+                    <Button variant="outline" size="sm" onClick={() => navigate("/services")}>{t('marketplace.viewAll')}</Button>
                   </div>
                   
                   <div className="grid md:grid-cols-2 gap-6">
@@ -758,10 +758,10 @@ const Marketplace = () => {
                       </div>
                     ) : (
                       realPhotographers.map((photographer, index) => (
-                        <Card key={index} className="p-6 hover:shadow-lg transition-shadow">
-                        <div className="flex items-start space-x-4">
+                        <Card key={index} className="p-4 sm:p-6 hover:shadow-lg transition-shadow">
+                        <div className="flex items-start space-x-3 sm:space-x-4">
                           <div 
-                            className="w-16 h-16 bg-primary rounded-full flex items-center justify-center text-primary-foreground font-semibold cursor-pointer hover:opacity-80"
+                            className="w-12 h-12 sm:w-16 sm:h-16 bg-primary rounded-full flex items-center justify-center text-primary-foreground text-sm sm:text-base font-semibold cursor-pointer hover:opacity-80 flex-shrink-0"
                             onClick={() => navigate(`/vendor/${photographer.vendorId}`)}
                           >
                             {photographer.image}
@@ -838,9 +838,9 @@ const Marketplace = () => {
               
               <TabsContent value="gear" className="mt-8">
                 <div className="space-y-6">
-                  <div className="flex items-center justify-between">
-                    <h3 className="text-2xl font-semibold">{t('marketplace.popularGearRentals')}</h3>
-                    <Button variant="outline" onClick={() => navigate("/gear")}>{t('marketplace.viewAll')}</Button>
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                    <h3 className="text-xl sm:text-2xl font-semibold">{t('marketplace.popularGearRentals')}</h3>
+                    <Button variant="outline" size="sm" onClick={() => navigate("/gear")}>{t('marketplace.viewAll')}</Button>
                   </div>
                   
                   <div className="grid md:grid-cols-3 gap-6">
@@ -894,9 +894,9 @@ const Marketplace = () => {
               
               <TabsContent value="vendors" className="mt-8">
                 <div className="space-y-6">
-                  <div className="flex items-center justify-between">
-                    <h3 className="text-2xl font-semibold">{t('marketplace.topRatedVendors')}</h3>
-                    <Button variant="outline" onClick={() => navigate("/services")}>{t('marketplace.viewAll')}</Button>
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                    <h3 className="text-xl sm:text-2xl font-semibold">{t('marketplace.topRatedVendors')}</h3>
+                    <Button variant="outline" size="sm" onClick={() => navigate("/services")}>{t('marketplace.viewAll')}</Button>
                   </div>
                   
                   <div className="grid md:grid-cols-3 gap-6">

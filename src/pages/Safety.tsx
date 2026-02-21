@@ -2,9 +2,8 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { Shield, AlertTriangle, Users, Camera, MapPin, Phone, CheckCircle, FileText } from "lucide-react";
+import { Shield, AlertTriangle, Users, Camera, MapPin, CheckCircle, FileText } from "lucide-react";
 
 const Safety = () => {
   const safetyGuidelines = [
@@ -91,11 +90,6 @@ const Safety = () => {
     }
   ];
 
-  const emergencyContacts = [
-    { service: "Platform Support", number: "+234-800-BOP-HELP", hours: "24/7" },
-    { service: "Emergency Services", number: "199 (Nigeria)", hours: "24/7" },
-    { service: "Safety Hotline", number: "+234-800-SAFE-NOW", hours: "24/7" }
-  ];
 
   const safetyTips = [
     {
@@ -147,10 +141,6 @@ const Safety = () => {
               Your safety is our top priority. Follow these guidelines to ensure secure and professional 
               experiences on the BOP 3.0 platform.
             </p>
-            <div className="flex flex-wrap justify-center gap-4">
-              <Button size="lg">Download Safety Guide</Button>
-              <Button variant="outline" size="lg">Report an Issue</Button>
-            </div>
           </div>
         </section>
 
@@ -260,46 +250,7 @@ const Safety = () => {
           </div>
         </section>
 
-        {/* Emergency Contacts */}
-        <section className="py-16 bg-muted/50">
-          <div className="container mx-auto px-4">
-            <div className="text-center mb-12">
-              <h2 className="text-3xl font-bold mb-4">Emergency Contacts</h2>
-              <p className="text-muted-foreground max-w-2xl mx-auto">
-                Important contacts for safety emergencies and platform support
-              </p>
-            </div>
 
-            <div className="grid md:grid-cols-3 gap-6 max-w-4xl mx-auto">
-              {emergencyContacts.map((contact, index) => (
-                <Card key={index} className="p-6 text-center">
-                  <Phone className="w-8 h-8 text-primary mx-auto mb-4" />
-                  <h3 className="font-semibold mb-2">{contact.service}</h3>
-                  <p className="text-lg font-mono text-primary mb-2">{contact.number}</p>
-                  <Badge variant="secondary">{contact.hours}</Badge>
-                </Card>
-              ))}
-            </div>
-
-            <div className="text-center mt-12">
-              <Card className="max-w-2xl mx-auto p-6 bg-red-50 border-red-200">
-                <div className="flex items-center justify-center mb-4">
-                  <AlertTriangle className="w-8 h-8 text-red-500" />
-                </div>
-                <h3 className="text-lg font-semibold text-red-800 mb-2">
-                  Report Safety Concerns Immediately
-                </h3>
-                <p className="text-red-700 text-sm mb-4">
-                  If you experience or witness any safety violations, harassment, or suspicious activity, 
-                  report it through our platform immediately.
-                </p>
-                <Button className="bg-red-600 hover:bg-red-700">
-                  Report Safety Issue
-                </Button>
-              </Card>
-            </div>
-          </div>
-        </section>
 
         {/* Resources */}
         <section className="py-16">
@@ -318,16 +269,13 @@ const Safety = () => {
                 { title: "Equipment Safety Guide", type: "PDF", size: "3.8 MB" },
                 { title: "Location Safety Tips", type: "PDF", size: "1.9 MB" }
               ].map((resource, index) => (
-                <Card key={index} className="p-4 text-center hover:shadow-lg transition-shadow cursor-pointer">
+                <Card key={index} className="p-4 text-center hover:shadow-lg transition-shadow">
                   <FileText className="w-8 h-8 text-primary mx-auto mb-3" />
                   <h3 className="font-semibold mb-2">{resource.title}</h3>
                   <div className="flex justify-center space-x-2 text-xs text-muted-foreground">
                     <Badge variant="outline">{resource.type}</Badge>
                     <span>{resource.size}</span>
                   </div>
-                  <Button variant="outline" className="w-full mt-3" size="sm">
-                    Download
-                  </Button>
                 </Card>
               ))}
             </div>

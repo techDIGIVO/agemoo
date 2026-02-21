@@ -128,19 +128,19 @@ const VendorRegistration = () => {
           </Button>
 
           <div className="bg-background rounded-2xl shadow-xl border overflow-hidden">
-            <div className="p-8 border-b bg-primary/5">
+            <div className="p-4 sm:p-8 border-b bg-primary/5">
               <div className="flex items-center space-x-3 mb-2">
                 <div className="p-2 bg-primary/10 rounded-lg">
                   <Camera className="w-6 h-6 text-primary" />
                 </div>
-                <h1 className="text-3xl font-bold">Join Agemoo as a Vendor</h1>
+                <h1 className="text-2xl sm:text-3xl font-bold">Join Agemoo as a Vendor</h1>
               </div>
               <p className="text-muted-foreground">
                 Complete the form below to start reaching thousands of clients across Nigeria.
               </p>
             </div>
 
-            <form onSubmit={(e) => handleSubmit(e, 'submitted')} className="p-8 space-y-10">
+            <form onSubmit={(e) => handleSubmit(e, 'submitted')} className="p-4 sm:p-8 space-y-10">
               {/* Business Section */}
               <section className="space-y-6">
                 <div className="flex items-center space-x-2 border-b pb-2">

@@ -35,26 +35,6 @@ const About = () => {
     }
   ];
 
-  const team = [
-    {
-      name: "Adaora Nnamdi",
-      role: "Founder & CEO",
-      image: "https://images.unsplash.com/photo-1494790108755-2616b612b742?w=400&h=400&fit=crop",
-      bio: "Former photographer turned entrepreneur, passionate about empowering African creatives."
-    },
-    {
-      name: "Kwame Asante",
-      role: "Head of Product",
-      image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop",
-      bio: "10+ years in tech, focused on building intuitive platforms for creative professionals."
-    },
-    {
-      name: "Zara Okafor",
-      role: "Community Lead",
-      image: "https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?w=400&h=400&fit=crop",
-      bio: "Connecting photographers worldwide and fostering growth within our community."
-    }
-  ];
 
   return (
     <div className="min-h-screen bg-background">
@@ -130,36 +110,7 @@ const About = () => {
           </div>
         </section>
 
-        {/* Team Section */}
-        <section className="py-20">
-          <div className="container mx-auto px-4">
-            <div className="text-center max-w-3xl mx-auto mb-16">
-              <h2 className="text-3xl md:text-4xl font-bold mb-6">Meet Our Team</h2>
-              <p className="text-xl text-muted-foreground">
-                Passionate individuals working together to transform the photography industry
-              </p>
-            </div>
-            
-            <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
-              {team.map((member, index) => (
-                <Card key={index} className="overflow-hidden shadow-soft">
-                  <div className="aspect-square bg-muted">
-                    <img 
-                      src={member.image} 
-                      alt={member.name}
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                  <div className="p-6">
-                    <h3 className="text-xl font-semibold mb-2">{member.name}</h3>
-                    <p className="text-primary font-medium mb-3">{member.role}</p>
-                    <p className="text-muted-foreground leading-relaxed">{member.bio}</p>
-                  </div>
-                </Card>
-              ))}
-            </div>
-          </div>
-        </section>
+
       </main>
       <Footer />
       
