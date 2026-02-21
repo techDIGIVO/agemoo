@@ -264,7 +264,7 @@ const AuthPage = () => {
                           </Button>
                         </div>
                       </div>
-                      <Button variant="link" size="sm" onClick={() => setShowReset(true)} className="p-0 h-auto">Forgot password?</Button>
+                      <Button type="button" variant="link" size="sm" onClick={() => setShowReset(true)} className="p-0 h-auto">Forgot password?</Button>
                       <Button className="w-full" type="submit" disabled={isLoading}>
                         {isLoading ? "Signing in..." : "Sign In"}
                       </Button>
