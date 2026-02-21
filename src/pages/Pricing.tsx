@@ -306,10 +306,10 @@ const Pricing = () => {
                 Join thousands of photographers already using Agemoo to build successful businesses.
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Button size="lg" className="text-lg px-8">
+                <Button size="lg" className="text-lg px-8" onClick={() => navigate("/?signup=professional&trial=true")}>
                   Start Free Trial
                 </Button>
-                <Button size="lg" variant="outline" className="text-lg px-8">
+                <Button size="lg" variant="outline" className="text-lg px-8" onClick={() => navigate("/contact?subject=demo")}>
                   Schedule Demo
                 </Button>
               </div>

@@ -175,6 +175,57 @@ export type Database = {
           },
         ]
       }
+      blog_posts: {
+        Row: {
+          id: string
+          title: string
+          slug: string
+          excerpt: string
+          content: string
+          category: string
+          author_id: string | null
+          author_name: string
+          image_url: string | null
+          featured: boolean | null
+          published: boolean | null
+          read_time: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          title: string
+          slug: string
+          excerpt: string
+          content: string
+          category: string
+          author_id?: string | null
+          author_name: string
+          image_url?: string | null
+          featured?: boolean | null
+          published?: boolean | null
+          read_time?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          title?: string
+          slug?: string
+          excerpt?: string
+          content?: string
+          category?: string
+          author_id?: string | null
+          author_name?: string
+          image_url?: string | null
+          featured?: boolean | null
+          published?: boolean | null
+          read_time?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       categories: {
         Row: {
           created_at: string

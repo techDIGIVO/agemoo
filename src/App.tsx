@@ -20,6 +20,7 @@ import DemoPrinters from "./pages/DemoPrinters";
 import About from "./pages/About";
 import Blog from "./pages/Blog";
 import BlogPost from "./pages/BlogPost";
+import CreateBlogPost from "./pages/CreateBlogPost";
 import Dashboard from "./pages/Dashboard";
 import DashboardBookings from "./pages/DashboardBookings";
 import DashboardProfile from "./pages/DashboardProfile";
@@ -85,6 +86,7 @@ const App = () => {
                 <Route path="/demos/printers" element={<DemoPrinters />} />
                 <Route path="/about" element={<About />} />
                 <Route path="/blog" element={<Blog />} />
+                <Route path="/blog/new" element={<CreateBlogPost />} />
                 <Route path="/blog/:id" element={<BlogPost />} />
                 <Route path="/dashboard" element={<Dashboard />} />
                 <Route path="/pricing" element={<Pricing />} />
