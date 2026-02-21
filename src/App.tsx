@@ -34,7 +34,7 @@ import Careers from "./pages/Careers";
 import Contact from "./pages/Contact";
 import Privacy from "./pages/Privacy";
 import Terms from "./pages/Terms";
-import Press from "./pages/Press";
+// import Press from "./pages/Press"; // temporarily removed
 import Cookies from "./pages/Cookies";
 import GDPR from "./pages/GDPR";
 import SupportFAQ from "./pages/SupportFAQ";
@@ -97,7 +97,7 @@ const App = () => {
                 <Route path="/contact" element={<Contact />} />
                 <Route path="/privacy" element={<Privacy />} />
                 <Route path="/terms" element={<Terms />} />
-                <Route path="/press" element={<Press />} />
+                {/* <Route path="/press" element={<Press />} /> temporarily removed */}
                 <Route path="/cookies" element={<Cookies />} />
                 <Route path="/gdpr" element={<GDPR />} />
                 <Route path="/support/faqs" element={<SupportFAQ />} />
