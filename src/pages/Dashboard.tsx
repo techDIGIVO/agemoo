@@ -301,11 +301,14 @@ const Dashboard = () => {
 
   if (isLoading || !user) return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
 
+  const totalRevenue = bookings.reduce((sum, b) => sum + (b.total_price || 0), 0);
+  const confirmedBookings = bookings.filter(b => b.status === 'confirmed' || b.status === 'completed');
+
   const stats = [
-    { label: t('dashboard.stats.totalBookings'), value: bookings.length.toString(), icon: Calendar, trend: "+12%" },
-    { label: t('dashboard.stats.revenue'), value: "₦485,000", icon: DollarSign, trend: "+8%" },
-    { label: t('dashboard.stats.rating'), value: "4.9", icon: Star, trend: "0%" },
-    { label: t('dashboard.stats.views'), value: "1,247", icon: TrendingUp, trend: "+23%" }
+    { label: t('dashboard.stats.totalBookings'), value: bookings.length.toString(), icon: Calendar },
+    { label: t('dashboard.stats.revenue'), value: `₦${totalRevenue.toLocaleString()}`, icon: DollarSign },
+    { label: t('dashboard.stats.rating'), value: profileData.verified ? "Verified" : "Pending", icon: Star },
+    { label: t('dashboard.stats.views'), value: `${services.length} services`, icon: TrendingUp }
   ];
 
   return (
@@ -330,7 +333,6 @@ const Dashboard = () => {
                   <div>
                     <p className="text-sm text-muted-foreground mb-1">{stat.label}</p>
                     <p className="text-2xl font-bold">{stat.value}</p>
-                    <p className="text-sm text-green-600 mt-1">{stat.trend}</p>
                   </div>
                   <stat.icon className="w-8 h-8 text-primary" />
                 </div>

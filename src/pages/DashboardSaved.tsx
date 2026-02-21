@@ -39,41 +39,79 @@ const DashboardSaved = () => {
 
       if (error) throw error;
 
-      // For demo purposes, create mock data for saved items
-      // In production, you'd join with services/gear/vendors tables
-      const mockSavedItems = (data || []).map((save, index) => ({
-        id: save.id,
-        item_id: save.item_id,
-        item_type: save.item_type,
-        created_at: save.created_at,
-        // Mock data based on type
-        ...(save.item_type === 'service' ? {
-          title: `Professional ${['Photography', 'Videography', 'Photo Editing'][index % 3]} Service`,
-          vendor: `Vendor ${index + 1}`,
-          price: `₦${(45 + index * 10) * 1000}`,
-          rating: 4.5 + (index % 5) * 0.1,
-          reviews: 50 + index * 10,
-          location: ['Lagos', 'Abuja', 'Accra'][index % 3],
-          category: ['Portrait', 'Wedding', 'Event'][index % 3],
-        } : save.item_type === 'gear' ? {
-          title: `Professional ${['Camera', 'Lens', 'Lighting'][index % 3]} Equipment`,
-          owner: `Owner ${index + 1}`,
-          price_per_day: `₦${(25 + index * 5) * 1000}`,
-          rating: 4.6 + (index % 4) * 0.1,
-          reviews: 30 + index * 5,
-          location: ['Lagos', 'Cape Town', 'Nairobi'][index % 3],
-          category: ['Cameras', 'Lenses', 'Lighting'][index % 3],
-        } : {
-          name: `Studio ${index + 1}`,
-          owner: `Owner ${index + 1}`,
-          rating: 4.7 + (index % 3) * 0.1,
-          projects: 100 + index * 20,
-          location: ['Lagos', 'Kigali', 'Dar es Salaam'][index % 3],
-          specialties: ['Wedding', 'Portrait', 'Event'],
-        })
-      }));
+      const saves = data || [];
 
-      setSavedItems(mockSavedItems);
+      // Fetch real details for each saved item type
+      const serviceIds = saves.filter(s => s.item_type === 'service').map(s => s.item_id);
+      const gearIds = saves.filter(s => s.item_type === 'gear').map(s => s.item_id);
+      const vendorIds = saves.filter(s => s.item_type === 'vendor').map(s => s.item_id);
+
+      const [servicesRes, gearRes, vendorsRes] = await Promise.all([
+        serviceIds.length > 0
+          ? supabase.from('services').select('*').in('id', serviceIds)
+          : Promise.resolve({ data: [] }),
+        gearIds.length > 0
+          ? supabase.from('gear').select('*').in('id', gearIds)
+          : Promise.resolve({ data: [] }),
+        vendorIds.length > 0
+          ? supabase.from('profiles').select('*').in('id', vendorIds)
+          : Promise.resolve({ data: [] }),
+      ]);
+
+      const servicesMap = new Map((servicesRes.data || []).map((s: any) => [s.id, s]));
+      const gearMap = new Map((gearRes.data || []).map((g: any) => [g.id, g]));
+      const vendorsMap = new Map((vendorsRes.data || []).map((v: any) => [v.id, v]));
+
+      const enrichedItems = saves.map((save) => {
+        const base = {
+          id: save.id,
+          item_id: save.item_id,
+          item_type: save.item_type,
+          created_at: save.created_at,
+        };
+
+        if (save.item_type === 'service') {
+          const svc = servicesMap.get(save.item_id);
+          return {
+            ...base,
+            title: svc?.title || 'Service',
+            vendor: svc?.location || 'Vendor',
+            price: svc ? `₦${Number(svc.price).toLocaleString()}` : '',
+            rating: svc?.rating || 0,
+            reviews: svc?.review_count || 0,
+            location: svc?.location || '',
+            category: svc?.category || 'Photography',
+          };
+        }
+
+        if (save.item_type === 'gear') {
+          const g = gearMap.get(save.item_id);
+          return {
+            ...base,
+            title: g?.title || 'Gear',
+            owner: g?.location || 'Owner',
+            price_per_day: g ? `₦${Number(g.price_per_day).toLocaleString()}` : '',
+            rating: g?.rating || 0,
+            reviews: g?.review_count || 0,
+            location: g?.location || '',
+            category: g?.category || 'Equipment',
+          };
+        }
+
+        // vendor type
+        const v = vendorsMap.get(save.item_id);
+        return {
+          ...base,
+          name: v?.name || 'Photographer',
+          owner: v?.profession || 'Creative',
+          rating: 0,
+          projects: 0,
+          location: v?.location || '',
+          specialties: v?.profession ? [v.profession] : ['Photography'],
+        };
+      });
+
+      setSavedItems(enrichedItems);
     } catch (error: any) {
       console.error('Error fetching saved items:', error);
       toast({

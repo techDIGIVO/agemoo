@@ -56,6 +56,13 @@ const VendorProfile = () => {
     const fetchVendorData = async () => {
       if (!vendorId) return;
 
+      // Fetch vendor profile from profiles table
+      const { data: profileData } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', vendorId)
+        .single();
+
       // Fetch services by vendor
       const { data: servicesData } = await supabase
         .from('services')
@@ -71,16 +78,20 @@ const VendorProfile = () => {
       setServices(servicesData || []);
       setGear(gearData || []);
       
-      // For demo, create a vendor profile
-      setVendor({
-        id: vendorId,
-        name: "Professional Photographer",
-        bio: "Passionate photographer specializing in capturing life's precious moments",
-        location: "Lagos, Nigeria",
-        rating: 4.8,
-        reviewCount: 45,
-        joinedDate: "2023"
-      });
+      if (profileData) {
+        setVendor({
+          id: vendorId,
+          name: profileData.name || "Photographer",
+          bio: profileData.bio || "No bio available yet.",
+          location: profileData.location || "Africa",
+          profession: profileData.profession || "Creative Professional",
+          avatar_url: profileData.avatar_url || null,
+          created_at: profileData.created_at,
+        });
+      } else {
+        // No profile found — show a fallback so page isn't blank
+        setVendor(null);
+      }
 
       setLoading(false);
     };
@@ -143,10 +154,9 @@ const VendorProfile = () => {
                 <div>
                   <h1 className="text-3xl font-bold mb-2">{vendor.name}</h1>
                   <div className="flex items-center space-x-4 text-muted-foreground mb-3">
-                    <div className="flex items-center">
-                      <Star className="w-4 h-4 fill-primary text-primary mr-1" />
-                      <span>{vendor.rating} ({vendor.reviewCount} reviews)</span>
-                    </div>
+                    {vendor.profession && (
+                      <Badge variant="secondary">{vendor.profession}</Badge>
+                    )}
                     <div className="flex items-center">
                       <MapPin className="w-4 h-4 mr-1" />
                       <span>{vendor.location}</span>
@@ -250,12 +260,14 @@ const VendorProfile = () => {
                 <div className="space-y-2">
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Member since</span>
-                    <span className="font-medium">{vendor.joinedDate}</span>
+                    <span className="font-medium">{vendor.created_at ? new Date(vendor.created_at).getFullYear() : 'N/A'}</span>
                   </div>
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Response time</span>
-                    <span className="font-medium">Usually within 24 hours</span>
-                  </div>
+                  {vendor.profession && (
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Specialty</span>
+                      <span className="font-medium">{vendor.profession}</span>
+                    </div>
+                  )}
                 </div>
               </Card>
             </TabsContent>
