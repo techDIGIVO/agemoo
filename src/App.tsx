@@ -7,6 +7,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/hooks/useAuth";
 import { LanguageProvider } from "@/hooks/useLanguage";
 import { ScrollToTop } from "@/components/ScrollToTop";
+import CookieBanner from "@/components/CookieBanner";
 import Index from "./pages/Index";
 import Services from "./pages/Services";
 import Gear from "./pages/Gear";
@@ -64,6 +65,7 @@ const App = () => {
             <Sonner />
             <BrowserRouter>
               <ScrollToTop />
+              <CookieBanner />
               <Routes>
                 <Route path="/" element={<Index />} />
                 <Route path="/services" element={<Services />} />

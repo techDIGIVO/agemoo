@@ -5,14 +5,16 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 interface AvailabilityDialogProps {
   isOpen: boolean;
   onClose: () => void;
   onSuccess?: () => void;
+  userId?: string;
 }
 
-export const AvailabilityDialog = ({ isOpen, onClose, onSuccess }: AvailabilityDialogProps) => {
+export const AvailabilityDialog = ({ isOpen, onClose, onSuccess, userId }: AvailabilityDialogProps) => {
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
@@ -23,11 +25,25 @@ export const AvailabilityDialog = ({ isOpen, onClose, onSuccess }: AvailabilityD
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!userId) {
+      toast({ variant: "destructive", title: "Error", description: "You must be signed in." });
+      return;
+    }
     setLoading(true);
 
     try {
-      // Simulate saving - in production this would save to database
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      const { error } = await supabase.from('bookings').insert({
+        vendor_id: userId,
+        client_id: userId,
+        booking_date: formData.date,
+        booking_time: formData.time,
+        duration: formData.duration,
+        total_price: 0,
+        status: 'confirmed',
+        notes: `Availability Slot – ${formData.duration}`,
+      });
+
+      if (error) throw error;
 
       toast({
         title: "Availability added!",
@@ -37,11 +53,11 @@ export const AvailabilityDialog = ({ isOpen, onClose, onSuccess }: AvailabilityD
       onSuccess?.();
       onClose();
       setFormData({ date: "", time: "", duration: "" });
-    } catch (error) {
+    } catch (error: any) {
       toast({
         variant: "destructive",
         title: "Error",
-        description: "Failed to add availability",
+        description: error.message || "Failed to add availability",
       });
     } finally {
       setLoading(false);

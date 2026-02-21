@@ -9,6 +9,11 @@ import { Cookie, Settings, Shield, Eye } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import {
+  saveConsent as saveCookieConsent,
+  applyCookies,
+  removeNonEssentialCookies,
+} from "@/utils/cookies";
 
 const Cookies = () => {
   const { toast } = useToast();
@@ -38,11 +43,22 @@ const Cookies = () => {
   const saveConsent = async (consents: Record<string, boolean>) => {
     setIsSaving(true);
 
-    // Save to localStorage
-    localStorage.setItem('cookieConsent', JSON.stringify({
-      ...consents,
-      timestamp: new Date().toISOString()
-    }));
+    // Build a full consent object and persist via cookie utils
+    const consentObj = {
+      essential: true,
+      analytics: !!consents.analytics,
+      marketing: !!consents.marketing,
+      preference: !!consents.cookie,
+      timestamp: new Date().toISOString(),
+    };
+    saveCookieConsent(consentObj);
+
+    // Apply or remove real cookies based on consent
+    if (consentObj.analytics || consentObj.marketing || consentObj.preference) {
+      applyCookies(consentObj);
+    } else {
+      removeNonEssentialCookies();
+    }
     
     // Save to database if user is authenticated
     if (user) {

@@ -87,9 +87,33 @@ const Dashboard = () => {
     available: false
   });
 
+  // Ensure a profile row exists for this user (defensive – prevents FK errors)
+  const ensureProfile = async () => {
+    if (!user) return;
+    const { data: existing } = await supabase
+      .from('profiles')
+      .select('id')
+      .eq('id', user.id)
+      .maybeSingle();
+
+    if (!existing) {
+      await supabase.from('profiles').insert({
+        id: user.id,
+        name: user.user_metadata?.full_name || user.email?.split('@')[0] || 'User',
+        email: user.email || '',
+      });
+    }
+  };
+
   useEffect(() => {
     if (!isLoading && !user) navigate("/");
-    if (user) { loadProfileData(); fetchBookings(); fetchServices(); }
+    if (user) {
+      ensureProfile().then(() => {
+        loadProfileData();
+        fetchBookings();
+        fetchServices();
+      });
+    }
   }, [user, isLoading]);
 
   const fetchBookings = async () => {
@@ -777,7 +801,11 @@ const Dashboard = () => {
       <AvailabilityDialog
         isOpen={availabilityDialog}
         onClose={() => setAvailabilityDialog(false)}
-        onSuccess={() => toast({ title: "Availability Updated" })}
+        userId={user?.id}
+        onSuccess={() => {
+          fetchBookings();
+          toast({ title: "Availability Updated" });
+        }}
       />
 
       <Lightbox
