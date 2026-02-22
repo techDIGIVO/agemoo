@@ -54,39 +54,45 @@ const Marketplace = () => {
 
   const fetchRealPhotographers = async () => {
     try {
-      // Fetch services with profiles
+      // Step 1: Fetch services (no FK join)
       const { data: services, error } = await supabase
         .from('services')
-        .select(`
-          *,
-          profiles:vendor_id (
-            id,
-            name,
-            avatar_url,
-            location,
-            bio,
-            profession
-          )
-        `)
+        .select('*')
         .eq('is_active', true)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
 
+      // Step 2: Fetch profiles for all vendor_ids
+      const vendorIds = [...new Set((services || []).map((s: any) => s.vendor_id).filter(Boolean))];
+      let profileMap: Record<string, any> = {};
+
+      if (vendorIds.length > 0) {
+        const { data: profilesData } = await supabase
+          .from('profiles')
+          .select('id, name, avatar_url, location, bio, profession')
+          .in('id', vendorIds);
+
+        profileMap = Object.fromEntries(
+          (profilesData || []).map((p: any) => [p.id, p])
+        );
+      }
+
       // Group services by vendor
       const vendorMap = new Map();
       services?.forEach((service: any) => {
-        if (service.profiles) {
-          const vendorId = service.profiles.id;
+        const profile = profileMap[service.vendor_id];
+        if (profile) {
+          const vendorId = profile.id;
           if (!vendorMap.has(vendorId)) {
             vendorMap.set(vendorId, {
               vendorId: vendorId,
-              name: service.profiles.name || 'Anonymous',
-              specialty: service.profiles.profession || service.category || 'Photography',
+              name: profile.name || 'Anonymous',
+              specialty: profile.profession || service.category || 'Photography',
               rating: service.rating || 4.5,
               price: `₦${service.price.toLocaleString()}`,
-              image: service.profiles.name?.split(' ').map((n: string) => n[0]).join('').toUpperCase() || 'AN',
-              location: service.profiles.location || service.location || 'Nigeria',
+              image: profile.name?.split(' ').map((n: string) => n[0]).join('').toUpperCase() || 'AN',
+              location: profile.location || service.location || 'Nigeria',
               experience: '3+ years experience',
               services: []
             });

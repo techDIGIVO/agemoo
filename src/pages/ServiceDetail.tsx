@@ -20,35 +20,67 @@ const ServiceDetail = () => {
   const [service, setService] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [bookingDialog, setBookingDialog] = useState(false);
+  const [vendorSlots, setVendorSlots] = useState<any[]>([]);
 
   useEffect(() => {
     const fetchService = async () => {
       if (!slug) return;
       
-      // Try to fetch by ID or slug from Supabase
-      let data, error;
-      
-      if (!isNaN(Number(slug))) {
-        // Numeric slug — try fetching by ID
-        ({ data, error } = await supabase
+      // Step 1: Fetch service (no FK join — works regardless of constraint state)
+      let svcData: any = null;
+      let svcError: any = null;
+
+      // Try UUID first, then slug
+      const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(slug);
+
+      if (isUUID) {
+        ({ data: svcData, error: svcError } = await supabase
           .from('services')
-          .select('*, profiles:vendor_id (id, name, avatar_url, location)')
+          .select('*')
           .eq('id', slug)
           .maybeSingle());
       } else {
-        // Otherwise fetch from database by slug
-        ({ data, error } = await supabase
+        ({ data: svcData, error: svcError } = await supabase
           .from('services')
-          .select('*, profiles:vendor_id (id, name, avatar_url, location)')
+          .select('*')
           .eq('slug', slug)
           .maybeSingle());
       }
 
-      if (error) {
-        console.error('Error fetching service:', error);
-      } else {
-        setService(data);
+      if (svcError) {
+        console.error('Error fetching service:', svcError);
+        setLoading(false);
+        return;
       }
+
+      // Step 2: Fetch vendor profile separately
+      if (svcData?.vendor_id) {
+        const { data: profileData } = await supabase
+          .from('profiles')
+          .select('id, name, avatar_url, location')
+          .eq('id', svcData.vendor_id)
+          .maybeSingle();
+
+        svcData.vendor_name = profileData?.name || 'Photographer';
+        svcData.vendor_avatar = profileData?.avatar_url || null;
+        svcData.vendor_location = profileData?.location || svcData.location;
+
+        // Fetch vendor's availability slots (self-referencing bookings in the future)
+        const today = new Date().toISOString().split('T')[0];
+        const { data: slotData } = await supabase
+          .from('bookings')
+          .select('*')
+          .eq('vendor_id', svcData.vendor_id)
+          .eq('client_id', svcData.vendor_id)
+          .gte('booking_date', today)
+          .eq('status', 'confirmed')
+          .order('booking_date', { ascending: true })
+          .limit(6);
+
+        setVendorSlots(slotData || []);
+      }
+
+      setService(svcData);
       setLoading(false);
     };
 
@@ -235,6 +267,34 @@ const ServiceDetail = () => {
                       <span className="font-medium">Free up to 48h before</span>
                     </div>
                   </div>
+
+                  {/* Vendor Availability */}
+                  {vendorSlots.length > 0 && (
+                    <div className="pt-4 border-t">
+                      <h4 className="font-semibold mb-3 flex items-center">
+                        <Calendar className="w-4 h-4 mr-2 text-primary" />
+                        Available Dates
+                      </h4>
+                      <div className="space-y-2">
+                        {vendorSlots.map((slot: any) => (
+                          <div key={slot.id} className="flex items-center gap-2 text-sm p-2 rounded bg-muted/50">
+                            <div className="bg-primary/10 px-2 py-1 rounded text-center min-w-[40px]">
+                              <span className="block text-[10px] font-bold uppercase text-primary">
+                                {new Date(slot.booking_date).toLocaleString('default', { month: 'short' })}
+                              </span>
+                              <span className="block text-sm font-bold">
+                                {new Date(slot.booking_date).getDate()}
+                              </span>
+                            </div>
+                            <div>
+                              <p className="font-medium">{slot.booking_time || 'Flexible'}</p>
+                              <p className="text-xs text-muted-foreground">{slot.duration}</p>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
               </Card>
             </div>

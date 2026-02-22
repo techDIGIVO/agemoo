@@ -31,6 +31,7 @@ interface ServiceItem {
   languages: string[];
   experience: string;
   specialties: string[];
+  duration: string;
 }
 
 const Services = () => {
@@ -62,40 +63,50 @@ const Services = () => {
   useEffect(() => {
     const fetchServices = async () => {
       try {
-        const { data, error } = await supabase
+        // Step 1: Fetch services (no FK join — works regardless of constraint state)
+        const { data: servicesData, error: sErr } = await supabase
           .from('services')
-          .select(`
-            *,
-            profiles:vendor_id (
-              id,
-              name,
-              avatar_url,
-              location,
-              bio,
-              profession
-            )
-          `)
+          .select('*')
           .eq('is_active', true)
           .order('created_at', { ascending: false });
 
-        if (error) throw error;
+        if (sErr) throw sErr;
 
-        const mapped: ServiceItem[] = (data || []).map((s: any) => ({
-          id: s.id,
-          vendor: s.profiles?.name || 'Photographer',
-          vendor_id: s.vendor_id,
-          title: s.title,
-          category: s.category,
-          price: `₦${Number(s.price).toLocaleString()}${s.duration ? '/' + s.duration : ''}`,
-          rating: s.rating || 0,
-          reviews: s.reviews_count || 0,
-          location: s.profiles?.location || s.location || 'Nigeria',
-          image: s.image_url,
-          verified: true,
-          languages: ['English'],
-          experience: s.profiles?.profession || 'Photography',
-          specialties: [s.category, s.subcategory].filter(Boolean) as string[]
-        }));
+        // Step 2: Fetch profiles for all vendor_ids
+        const vendorIds = [...new Set((servicesData || []).map((s: any) => s.vendor_id).filter(Boolean))];
+        let profileMap: Record<string, any> = {};
+
+        if (vendorIds.length > 0) {
+          const { data: profilesData } = await supabase
+            .from('profiles')
+            .select('id, name, avatar_url, location, bio, profession')
+            .in('id', vendorIds);
+
+          profileMap = Object.fromEntries(
+            (profilesData || []).map((p: any) => [p.id, p])
+          );
+        }
+
+        const mapped: ServiceItem[] = (servicesData || []).map((s: any) => {
+          const profile = profileMap[s.vendor_id] || null;
+          return {
+            id: s.id,
+            vendor: profile?.name || 'Photographer',
+            vendor_id: s.vendor_id,
+            title: s.title,
+            category: s.category,
+            price: `₦${Number(s.price).toLocaleString()}${s.duration ? '/' + s.duration : ''}`,
+            rating: s.rating || 0,
+            reviews: s.reviews_count || 0,
+            location: profile?.location || s.location || 'Nigeria',
+            image: s.image_url,
+            verified: true,
+            languages: ['English'],
+            experience: profile?.profession || 'Photography',
+            specialties: [s.category, s.subcategory].filter(Boolean) as string[],
+            duration: s.duration || '',
+          };
+        });
 
         setAllServices(mapped);
       } catch (error) {
@@ -455,7 +466,16 @@ const Services = () => {
         <BookingDialog
           isOpen={bookingDialog.isOpen}
           onClose={() => setBookingDialog({ isOpen: false, service: null })}
-          service={bookingDialog.service}
+          service={{
+            id: bookingDialog.service.id,
+            title: bookingDialog.service.title,
+            vendor: bookingDialog.service.vendor,
+            vendorId: bookingDialog.service.vendor_id || undefined,
+            price: bookingDialog.service.price,
+            category: bookingDialog.service.category,
+            image_url: bookingDialog.service.image || undefined,
+            duration: bookingDialog.service.duration,
+          }}
         />
       )}
       

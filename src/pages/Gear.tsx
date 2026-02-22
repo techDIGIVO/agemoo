@@ -53,37 +53,48 @@ const Gear = () => {
   useEffect(() => {
     const fetchGear = async () => {
       try {
+        // Step 1: Fetch gear (no FK join)
         const { data, error } = await supabase
           .from('gear')
-          .select(`
-            *,
-            profiles:vendor_id (
-              id,
-              name,
-              avatar_url,
-              location
-            )
-          `)
+          .select('*')
           .eq('is_available', true)
           .order('created_at', { ascending: false });
 
         if (error) throw error;
 
-        const mapped: GearItem[] = (data || []).map((g: any) => ({
-          id: g.id,
-          owner: g.profiles?.name || 'Equipment Owner',
-          vendor_id: g.vendor_id,
-          title: g.title,
-          category: g.category,
-          priceDay: `\u20a6${Number(g.price_per_day).toLocaleString()}`,
-          priceWeek: `\u20a6${Math.round(Number(g.price_per_day) * 5.5).toLocaleString()}`,
-          rating: g.rating || 0,
-          reviews: g.reviews_count || 0,
-          location: g.profiles?.location || g.location || 'Nigeria',
-          image: g.image_url,
-          verified: true,
-          condition: 'Good'
-        }));
+        // Step 2: Fetch profiles for all vendor_ids
+        const vendorIds = [...new Set((data || []).map((g: any) => g.vendor_id).filter(Boolean))];
+        let profileMap: Record<string, any> = {};
+
+        if (vendorIds.length > 0) {
+          const { data: profilesData } = await supabase
+            .from('profiles')
+            .select('id, name, avatar_url, location')
+            .in('id', vendorIds);
+
+          profileMap = Object.fromEntries(
+            (profilesData || []).map((p: any) => [p.id, p])
+          );
+        }
+
+        const mapped: GearItem[] = (data || []).map((g: any) => {
+          const profile = profileMap[g.vendor_id] || null;
+          return {
+            id: g.id,
+            owner: profile?.name || 'Equipment Owner',
+            vendor_id: g.vendor_id,
+            title: g.title,
+            category: g.category,
+            priceDay: `\u20a6${Number(g.price_per_day).toLocaleString()}`,
+            priceWeek: `\u20a6${Math.round(Number(g.price_per_day) * 5.5).toLocaleString()}`,
+            rating: g.rating || 0,
+            reviews: g.reviews_count || 0,
+            location: profile?.location || g.location || 'Nigeria',
+            image: g.image_url,
+            verified: true,
+            condition: 'Good'
+          };
+        });
 
         setAllGearItems(mapped);
       } catch (error) {

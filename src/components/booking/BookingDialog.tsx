@@ -10,6 +10,7 @@ import { Calendar, Clock, MapPin, DollarSign } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { DemoPaymentDialog } from "@/components/payment/DemoPaymentDialog";
+import { ensureProfile } from "@/utils/ensureProfile";
 
 interface BookingDialogProps {
   isOpen: boolean;
@@ -75,9 +76,19 @@ export const BookingDialog = ({ isOpen, onClose, service }: BookingDialogProps) 
         return;
       }
 
-      // Get current user
+      // Get current user — must be logged in to book
       const { data: { user } } = await supabase.auth.getUser();
       
+      if (!user) {
+        toast({
+          variant: "destructive",
+          title: "Sign in required",
+          description: "Please sign in to book a service.",
+        });
+        setIsLoading(false);
+        return;
+      }
+
       if (!service.vendorId) {
         toast({
           title: "Demo Listing",
@@ -86,10 +97,13 @@ export const BookingDialog = ({ isOpen, onClose, service }: BookingDialogProps) 
         setIsLoading(false);
         return;
       }
+
+      // Ensure client has a profile row (prevents FK errors)
+      await ensureProfile(user);
       
       // Create booking
       const { error } = await supabase.from('bookings').insert([{
-        client_id: user?.id || null,
+        client_id: user.id,
         vendor_id: service.vendorId,
         booking_date: bookingForm.eventDate,
         booking_time: bookingForm.eventTime || '09:00',

@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -10,6 +10,7 @@ import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Camera, Plus, X } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 
 interface ProfileDialogProps {
@@ -18,6 +19,7 @@ interface ProfileDialogProps {
 }
 
 export const ProfileDialog = ({ isOpen, onClose }: ProfileDialogProps) => {
+  const { user } = useAuth();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [uploadingImage, setUploadingImage] = useState(false);
@@ -25,35 +27,86 @@ export const ProfileDialog = ({ isOpen, onClose }: ProfileDialogProps) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   
   const [profile, setProfile] = useState({
-    firstName: "Amara",
-    lastName: "Johnson",
-    email: "amara@example.com",
-    phone: "+234 901 234 5678",
-    location: "Lagos, Nigeria",
-    bio: "Professional portrait photographer specializing in authentic moments and natural lighting.",
+    firstName: "",
+    lastName: "",
+    email: "",
+    phone: "",
+    location: "",
+    bio: "",
     experience: "3-5",
-    specialties: "Portraits, Weddings, Events",
-    equipment: "Canon 5D Mark IV, Sony A7R III, Various lenses and lighting equipment",
-    verified: true,
+    specialties: "",
+    equipment: "",
+    verified: false,
     available: true
   });
 
   const [portfolioImages, setPortfolioImages] = useState<string[]>([]);
 
+  // Load actual user profile when dialog opens
+  useEffect(() => {
+    if (!isOpen || !user) return;
+
+    const loadProfile = async () => {
+      const { data: profileData } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', user.id)
+        .single();
+
+      const { data: appData } = await supabase
+        .from('applications')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (profileData) {
+        const nameParts = (profileData.name || "").trim().split(/\s+/);
+        setProfile({
+          firstName: nameParts[0] || "",
+          lastName: nameParts.slice(1).join(" ") || "",
+          email: user.email || "",
+          phone: profileData.phone || appData?.phone || "",
+          location: profileData.location || appData?.location || "",
+          bio: profileData.bio || "",
+          experience: appData?.experience || "3-5",
+          specialties: profileData.profession || appData?.specialties?.join(", ") || "",
+          equipment: appData?.equipment || "",
+          verified: appData?.status === 'approved',
+          available: true
+        });
+      } else {
+        // No profile row yet — pre-fill from auth metadata
+        const meta = user.user_metadata || {};
+        const displayName = meta.name || meta.full_name || "";
+        const nameParts = displayName.trim().split(/\s+/);
+        setProfile(prev => ({
+          ...prev,
+          firstName: nameParts[0] || "",
+          lastName: nameParts.slice(1).join(" ") || "",
+          email: user.email || ""
+        }));
+      }
+    };
+
+    loadProfile();
+  }, [isOpen, user]);
+
   const handleSave = async () => {
+    if (!user) return;
     setIsLoading(true);
     try {
-      const { data: { user }, error: userError } = await supabase.auth.getUser();
-      if (userError || !user) throw new Error('User not authenticated');
-
       const { error } = await supabase
         .from('profiles')
         .upsert({
           id: user.id,
-          name: `${profile.firstName} ${profile.lastName}`,
+          name: `${profile.firstName} ${profile.lastName}`.trim(),
           bio: profile.bio,
           phone: profile.phone,
           location: profile.location,
+          profession: profile.specialties,
+          updated_at: new Date().toISOString()
         });
 
       if (error) throw error;
@@ -86,11 +139,7 @@ export const ProfileDialog = ({ isOpen, onClose }: ProfileDialogProps) => {
     setUploadProgress(0);
     
     try {
-      // Get current user
-      const { data: { user }, error: userError } = await supabase.auth.getUser();
-      if (userError || !user) {
-        throw new Error('User not authenticated');
-      }
+      if (!user) throw new Error('User not authenticated');
 
       const totalFiles = files.length;
       let completedFiles = 0;

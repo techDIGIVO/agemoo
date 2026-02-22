@@ -23,28 +23,43 @@ const GearDetail = () => {
     const fetchGear = async () => {
       if (!id) return;
 
-      let data, error;
+      let data: any = null;
+      let error: any = null;
+      const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
 
-      // Fetch from Supabase by ID or slug
-      if (!isNaN(Number(id))) {
+      // Fetch from Supabase by ID or slug (no FK join)
+      if (isUUID) {
         ({ data, error } = await supabase
           .from('gear')
-          .select('*, profiles:vendor_id (id, name, avatar_url, location)')
+          .select('*')
           .eq('id', id)
           .maybeSingle());
       } else {
         ({ data, error } = await supabase
           .from('gear')
-          .select('*, profiles:vendor_id (id, name, avatar_url, location)')
+          .select('*')
           .eq('slug', id)
           .maybeSingle());
       }
 
       if (error) {
         console.error('Error fetching gear:', error);
-      } else {
-        setGear(data);
       }
+
+      // Fetch vendor profile separately
+      if (data?.vendor_id) {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('id, name, avatar_url, location')
+          .eq('id', data.vendor_id)
+          .maybeSingle();
+
+        data.vendor_name = profile?.name || 'Equipment Owner';
+        data.vendor_avatar = profile?.avatar_url || null;
+        data.vendor_location = profile?.location || data.location;
+      }
+
+      setGear(data);
       setLoading(false);
     };
 

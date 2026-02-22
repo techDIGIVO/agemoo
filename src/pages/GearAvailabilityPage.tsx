@@ -45,7 +45,7 @@ const GearAvailabilityPage = () => {
 
       const { data, error } = await supabase
         .from('gear')
-        .select('*, profiles:vendor_id (id, name, location)')
+        .select('*')
         .eq('id', id)
         .maybeSingle();
 
@@ -54,10 +54,21 @@ const GearAvailabilityPage = () => {
       }
 
       if (data) {
+        // Fetch vendor profile separately
+        let ownerName = 'Equipment Owner';
+        if (data.vendor_id) {
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('id, name, location')
+            .eq('id', data.vendor_id)
+            .maybeSingle();
+          if (profile) ownerName = profile.name || ownerName;
+        }
+
         // Map DB fields to the shape the component expects
         setGear({
           ...data,
-          owner: data.profiles?.name || 'Equipment Owner',
+          owner: ownerName,
           priceDay: `\u20a6${Number(data.price_per_day).toLocaleString()}`,
           priceWeek: `\u20a6${Math.round(Number(data.price_per_day) * 5.5).toLocaleString()}`,
           image: data.image_url,

@@ -26,6 +26,7 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Lightbox } from "@/components/ui/lightbox";
 import { AvailabilityDialog } from "@/components/calendar/AvailabilityDialog";
+import { ensureProfile } from "@/utils/ensureProfile";
 
 const Dashboard = () => {
   const { user, isLoading } = useAuth();
@@ -57,8 +58,15 @@ const Dashboard = () => {
     name: "",
     price: "",
     duration: "",
-    description: ""
+    description: "",
+    category: "Portrait Photography"
   });
+
+  const serviceCategories = [
+    "Portrait Photography", "Wedding Photography", "Event Photography",
+    "Fashion Photography", "Product Photography", "Wildlife Photography",
+    "Street Photography", "Video Production", "Photo Editing"
+  ];
 
   const [manualBookingData, setManualBookingData] = useState({
     client_name: "",
@@ -87,28 +95,10 @@ const Dashboard = () => {
     available: false
   });
 
-  // Ensure a profile row exists for this user (defensive – prevents FK errors)
-  const ensureProfile = async () => {
-    if (!user) return;
-    const { data: existing } = await supabase
-      .from('profiles')
-      .select('id')
-      .eq('id', user.id)
-      .maybeSingle();
-
-    if (!existing) {
-      await supabase.from('profiles').insert({
-        id: user.id,
-        name: user.user_metadata?.full_name || user.email?.split('@')[0] || 'User',
-        email: user.email || '',
-      });
-    }
-  };
-
   useEffect(() => {
     if (!isLoading && !user) navigate("/");
     if (user) {
-      ensureProfile().then(() => {
+      ensureProfile(user).then(() => {
         loadProfileData();
         fetchBookings();
         fetchServices();
@@ -206,7 +196,8 @@ const Dashboard = () => {
       name: service.title,
       price: service.price.toString(),
       duration: service.duration,
-      description: service.description || ""
+      description: service.description || "",
+      category: service.category || "Portrait Photography"
     });
     setShowAddServiceForm(false);
   };
@@ -257,7 +248,7 @@ const Dashboard = () => {
         description: newService.description,
         price: priceValue,
         duration: newService.duration,
-        category: 'Photography',
+        category: newService.category,
         location: profileData.location || 'Nigeria',
         slug: newService.name.toLowerCase().replace(/\s+/g, '-')
       }).select().single();
@@ -268,7 +259,7 @@ const Dashboard = () => {
       if(data) setServices(prev => [data, ...prev]);
       
       setShowAddServiceForm(false);
-      setNewService({ name: "", price: "", duration: "", description: "" });
+      setNewService({ name: "", price: "", duration: "", description: "", category: "Portrait Photography" });
       toast({ title: "Service added!" });
     } catch (error: any) {
       toast({ variant: "destructive", title: "Error", description: error.message });
@@ -283,7 +274,8 @@ const Dashboard = () => {
         title: editingService.name,
         price: priceValue,
         duration: editingService.duration,
-        description: editingService.description
+        description: editingService.description,
+        category: editingService.category
       }).eq('id', editingService.id);
 
       if (error) throw error;
@@ -529,6 +521,22 @@ const Dashboard = () => {
                         <div className="space-y-2">
                           <Label>{t('dashboard.duration')} *</Label>
                           <Input value={editingService ? editingService.duration : newService.duration} onChange={e => editingService ? setEditingService({ ...editingService, duration: e.target.value }) : setNewService({ ...newService, duration: e.target.value })} placeholder="e.g., 8 hours" required />
+                        </div>
+                        <div className="space-y-2">
+                          <Label>Category *</Label>
+                          <Select
+                            value={editingService ? editingService.category : newService.category}
+                            onValueChange={(val) => editingService ? setEditingService({ ...editingService, category: val }) : setNewService({ ...newService, category: val })}
+                          >
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select category" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {serviceCategories.map((cat) => (
+                                <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
                         </div>
                         {/* Validation Fix: Textarea no longer 'required' */}
                         <div className="space-y-2">

@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ArrowLeft, Star, MapPin, MessageCircle, Share2, Camera, Package } from "lucide-react";
+import { ArrowLeft, Star, MapPin, MessageCircle, Share2, Camera, Package, Calendar } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { MessageButton } from "@/components/marketplace/MessageButton";
@@ -19,6 +19,7 @@ const VendorProfile = () => {
   const [vendor, setVendor] = useState<any>(null);
   const [services, setServices] = useState<any[]>([]);
   const [gear, setGear] = useState<any[]>([]);
+  const [availability, setAvailability] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   const handleShare = async () => {
@@ -75,8 +76,22 @@ const VendorProfile = () => {
         .select('*')
         .eq('vendor_id', vendorId);
 
+      // Fetch vendor availability slots (future confirmed bookings that are self-referencing slots)
+      const today = new Date().toISOString().split('T')[0];
+      const { data: availData } = await supabase
+        .from('bookings')
+        .select('*')
+        .eq('vendor_id', vendorId)
+        .gte('booking_date', today)
+        .eq('status', 'confirmed')
+        .order('booking_date', { ascending: true });
+
+      // Filter to availability slots (vendor_id === client_id)
+      const slots = (availData || []).filter((b: any) => b.vendor_id === b.client_id);
+
       setServices(servicesData || []);
       setGear(gearData || []);
+      setAvailability(slots);
       
       if (profileData) {
         setVendor({
@@ -182,6 +197,10 @@ const VendorProfile = () => {
                 <Camera className="w-4 h-4 mr-1 sm:mr-2" />
                 <span className="hidden sm:inline">Services</span> ({services.length})
               </TabsTrigger>
+              <TabsTrigger value="availability" className="flex-shrink-0">
+                <Calendar className="w-4 h-4 mr-1 sm:mr-2" />
+                <span className="hidden sm:inline">Availability</span> ({availability.length})
+              </TabsTrigger>
               <TabsTrigger value="gear" className="flex-shrink-0">
                 <Package className="w-4 h-4 mr-1 sm:mr-2" />
                 <span className="hidden sm:inline">Gear</span> ({gear.length})
@@ -217,6 +236,39 @@ const VendorProfile = () => {
               ) : (
                 <div className="text-center py-12 text-muted-foreground">
                   No services available yet
+                </div>
+              )}
+            </TabsContent>
+
+            <TabsContent value="availability" className="mt-6">
+              {availability.length > 0 ? (
+                <div className="space-y-3">
+                  {availability.map((slot: any) => (
+                    <Card key={slot.id} className="p-4">
+                      <div className="flex items-center gap-4">
+                        <div className="bg-primary/10 p-2 rounded text-center min-w-[55px]">
+                          <span className="block text-xs font-bold uppercase text-primary">
+                            {new Date(slot.booking_date).toLocaleString('default', { month: 'short' })}
+                          </span>
+                          <span className="block text-lg font-bold">
+                            {new Date(slot.booking_date).getDate()}
+                          </span>
+                        </div>
+                        <div>
+                          <p className="font-medium">
+                            {slot.booking_time || 'Flexible'} — {slot.duration || 'Duration TBD'}
+                          </p>
+                          <p className="text-sm text-muted-foreground">
+                            {new Date(slot.booking_date).toLocaleDateString('default', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+                          </p>
+                        </div>
+                      </div>
+                    </Card>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-12 text-muted-foreground">
+                  No availability set yet
                 </div>
               )}
             </TabsContent>
