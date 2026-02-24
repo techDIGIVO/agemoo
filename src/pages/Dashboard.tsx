@@ -39,6 +39,8 @@ const Dashboard = () => {
   const [showAddServiceForm, setShowAddServiceForm] = useState(false);
   const [showManualBookingForm, setShowManualBookingForm] = useState(false);
   const [editingService, setEditingService] = useState<any>(null);
+  const [showAddGearForm, setShowAddGearForm] = useState(false);
+  const [editingGear, setEditingGear] = useState<any>(null);
 
   // Media State
   const [uploadingImage, setUploadingImage] = useState(false);
@@ -49,6 +51,7 @@ const Dashboard = () => {
 
   // Data State
   const [services, setServices] = useState<any[]>([]);
+  const [gearItems, setGearItems] = useState<any[]>([]);
   const [bookings, setBookings] = useState<any[]>([]);
   const [bookingStatusFilter, setBookingStatusFilter] = useState("all");
   const [availabilityDialog, setAvailabilityDialog] = useState(false);
@@ -66,6 +69,21 @@ const Dashboard = () => {
     "Portrait Photography", "Wedding Photography", "Event Photography",
     "Fashion Photography", "Product Photography", "Wildlife Photography",
     "Street Photography", "Video Production", "Photo Editing"
+  ];
+
+  // Gear form state
+  const [newGear, setNewGear] = useState({
+    title: "",
+    category: "Camera Body",
+    price_per_day: "",
+    location: "",
+    description: ""
+  });
+
+  const gearCategories = [
+    "Camera Body", "Lens", "Tripod", "Lighting", "Audio Equipment",
+    "Drone", "Stabilizer / Gimbal", "Studio Equipment", "Backdrop",
+    "Memory Card / Storage", "Battery / Power", "Monitor", "Accessories", "Other"
   ];
 
   const [manualBookingData, setManualBookingData] = useState({
@@ -102,6 +120,7 @@ const Dashboard = () => {
         loadProfileData();
         fetchBookings();
         fetchServices();
+        fetchGear();
       });
     }
   }, [user, isLoading]);
@@ -126,6 +145,17 @@ const Dashboard = () => {
       .order('created_at', { ascending: false });
 
     if (!error) setServices(data || []);
+  };
+
+  const fetchGear = async () => {
+    if (!user) return;
+    const { data, error } = await supabase
+      .from('gear')
+      .select('*')
+      .eq('vendor_id', user.id)
+      .order('created_at', { ascending: false });
+
+    if (!error) setGearItems(data || []);
   };
 
   const loadProfileData = async () => {
@@ -188,6 +218,80 @@ const Dashboard = () => {
       toast({ title: t('action.statusUpdated'), description: `${t('action.bookingMarkedAs')} ${newStatus}` });
       fetchBookings();
     }
+  };
+
+  // ---- Gear handlers ----
+  const handleAddGear = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!user) return;
+    try {
+      const priceValue = parseFloat(newGear.price_per_day.replace(/[^0-9.-]+/g, ""));
+      if (isNaN(priceValue) || priceValue <= 0) {
+        toast({ variant: "destructive", title: "Invalid price", description: "Please enter a valid daily rental price." });
+        return;
+      }
+      const { data, error } = await supabase.from('gear').insert({
+        vendor_id: user.id,
+        title: newGear.title,
+        description: newGear.description,
+        category: newGear.category,
+        price_per_day: priceValue,
+        location: newGear.location || profileData.location || 'Nigeria',
+        slug: newGear.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') + '-' + Date.now()
+      }).select().single();
+
+      if (error) throw error;
+      if (data) setGearItems(prev => [data, ...prev]);
+      setShowAddGearForm(false);
+      setNewGear({ title: "", category: "Camera Body", price_per_day: "", location: "", description: "" });
+      toast({ title: "Gear listed!" });
+    } catch (error: any) {
+      toast({ variant: "destructive", title: "Error", description: error.message });
+    }
+  };
+
+  const handleUpdateGear = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingGear) return;
+    try {
+      const priceValue = parseFloat(editingGear.price_per_day.toString().replace(/[^0-9.-]+/g, ""));
+      const { error } = await supabase.from('gear').update({
+        title: editingGear.title,
+        category: editingGear.category,
+        price_per_day: priceValue,
+        location: editingGear.location,
+        description: editingGear.description
+      }).eq('id', editingGear.id);
+
+      if (error) throw error;
+      toast({ title: "Gear updated!" });
+      fetchGear();
+      setEditingGear(null);
+    } catch (error: any) {
+      toast({ variant: "destructive", title: "Update failed", description: error.message });
+    }
+  };
+
+  const handleDeleteGear = async (id: string) => {
+    const { error } = await supabase.from('gear').delete().eq('id', id);
+    if (!error) {
+      toast({ title: "Gear removed" });
+      setGearItems(prev => prev.filter(g => g.id !== id));
+    } else {
+      toast({ variant: "destructive", title: t('action.error'), description: error.message });
+    }
+  };
+
+  const handleEditGear = (gear: any) => {
+    setEditingGear({
+      id: gear.id,
+      title: gear.title,
+      category: gear.category,
+      price_per_day: gear.price_per_day.toString(),
+      location: gear.location || "",
+      description: gear.description || ""
+    });
+    setShowAddGearForm(false);
   };
 
   const handleEditService = (service: any) => {
@@ -324,7 +428,7 @@ const Dashboard = () => {
     { label: t('dashboard.stats.totalBookings'), value: bookings.length.toString(), icon: Calendar },
     { label: t('dashboard.stats.revenue'), value: `₦${totalRevenue.toLocaleString()}`, icon: DollarSign },
     { label: t('dashboard.stats.rating'), value: profileData.verified ? "Verified" : "Pending", icon: Star },
-    { label: t('dashboard.stats.views'), value: `${services.length} services`, icon: TrendingUp }
+    { label: t('dashboard.stats.views'), value: `${services.length} svc / ${gearItems.length} gear`, icon: TrendingUp }
   ];
 
   return (
@@ -362,6 +466,7 @@ const Dashboard = () => {
               <TabsTrigger value="bookings" className="flex-shrink-0">{t('dashboard.bookings')}</TabsTrigger>
               <TabsTrigger value="calendar" className="flex-shrink-0">{t('dashboard.calendar')}</TabsTrigger>
               <TabsTrigger value="services" className="flex-shrink-0">{t('dashboard.services')}</TabsTrigger>
+              <TabsTrigger value="gear" className="flex-shrink-0"><Package className="w-4 h-4 mr-1" />Gear</TabsTrigger>
               <TabsTrigger value="profile" className="flex-shrink-0">{t('dashboard.profile')}</TabsTrigger>
               <TabsTrigger value="settings" className="flex-shrink-0">{t('dashboard.settings')}</TabsTrigger>
             </TabsList>
@@ -394,7 +499,7 @@ const Dashboard = () => {
                     <Button variant="outline" className="h-20 flex-col" onClick={() => navigate('/dashboard/messages')}><Mail className="w-6 h-6 mb-2" />{t('dashboard.messages')}</Button>
                     <Button variant="outline" className="h-20 flex-col" onClick={() => setActiveTab("bookings")}><Calendar className="w-6 h-6 mb-2" />{t('dashboard.bookings')}</Button>
                     <Button variant="outline" className="h-20 flex-col" onClick={() => navigate('/profile/settings')}><User className="w-6 h-6 mb-2" />{t('dashboard.profileSettings')}</Button>
-                    <Button variant="outline" className="h-20 flex-col" onClick={() => navigate('/gear')}><Package className="w-6 h-6 mb-2" />{t('dashboard.myGear')}</Button>
+                    <Button variant="outline" className="h-20 flex-col" onClick={() => { setActiveTab("gear"); }}><Package className="w-6 h-6 mb-2" />{t('dashboard.myGear')}</Button>
                   </div>
                 </Card>
               </div>
@@ -576,6 +681,104 @@ const Dashboard = () => {
                     </Card>
                   ))}
                 </div>
+              </Card>
+            </TabsContent>
+
+            {/* ====== GEAR TAB ====== */}
+            <TabsContent value="gear" className="space-y-6">
+              <Card className="p-6">
+                <div className="flex items-center justify-between mb-6">
+                  <h3 className="text-lg font-semibold">My Gear Listings</h3>
+                  <Button onClick={() => { setShowAddGearForm(true); setEditingGear(null); }}><Plus className="w-4 h-4 mr-2" />List Gear</Button>
+                </div>
+
+                {(showAddGearForm || editingGear) && (
+                  <Card className="mb-8 p-6 bg-muted/30 border-primary/20">
+                    <h4 className="font-semibold mb-4">{editingGear ? 'Edit Gear' : 'List New Gear'}</h4>
+                    <form onSubmit={editingGear ? handleUpdateGear : handleAddGear} className="space-y-4">
+                      <div className="grid md:grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label>Title *</Label>
+                          <Input value={editingGear ? editingGear.title : newGear.title} onChange={e => editingGear ? setEditingGear({ ...editingGear, title: e.target.value }) : setNewGear({ ...newGear, title: e.target.value })} placeholder="e.g., Canon EOS R5 Body" required />
+                        </div>
+                        <div className="space-y-2">
+                          <Label>Category *</Label>
+                          <Select
+                            value={editingGear ? editingGear.category : newGear.category}
+                            onValueChange={(val) => editingGear ? setEditingGear({ ...editingGear, category: val }) : setNewGear({ ...newGear, category: val })}
+                          >
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select category" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {gearCategories.map((cat) => (
+                                <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="space-y-2">
+                          <Label>Price per Day (₦) *</Label>
+                          <Input value={editingGear ? editingGear.price_per_day : newGear.price_per_day} onChange={e => editingGear ? setEditingGear({ ...editingGear, price_per_day: e.target.value }) : setNewGear({ ...newGear, price_per_day: e.target.value })} placeholder="e.g., 15000" required />
+                        </div>
+                        <div className="space-y-2">
+                          <Label>Location *</Label>
+                          <Input value={editingGear ? editingGear.location : newGear.location} onChange={e => editingGear ? setEditingGear({ ...editingGear, location: e.target.value }) : setNewGear({ ...newGear, location: e.target.value })} placeholder={profileData.location || 'e.g., Lagos, Nigeria'} required />
+                        </div>
+                        <div className="space-y-2 md:col-span-2">
+                          <Label>Description</Label>
+                          <Textarea 
+                            value={editingGear ? editingGear.description : newGear.description} 
+                            onChange={e => editingGear ? setEditingGear({ ...editingGear, description: e.target.value }) : setNewGear({ ...newGear, description: e.target.value })} 
+                            placeholder="Condition, included accessories, rental terms..." 
+                          />
+                        </div>
+                      </div>
+                      <div className="flex space-x-2">
+                        <Button type="submit">{editingGear ? t('common.update') : t('common.save')}</Button>
+                        <Button variant="outline" type="button" onClick={() => { setShowAddGearForm(false); setEditingGear(null); }}>{t('common.cancel')}</Button>
+                      </div>
+                    </form>
+                  </Card>
+                )}
+
+                {gearItems.length > 0 ? (
+                  <div className="grid md:grid-cols-2 gap-6">
+                    {gearItems.map((gear) => (
+                      <Card key={gear.id} className="p-4 border-l-4 border-l-amber-500">
+                        <div className="flex justify-between items-start mb-2">
+                          <div className="flex-1">
+                            <h4 className="font-bold">{gear.title}</h4>
+                            <div className="flex items-center gap-2 mt-1">
+                              <Badge variant="secondary">{gear.category}</Badge>
+                              <Badge>₦{Number(gear.price_per_day).toLocaleString()}/day</Badge>
+                            </div>
+                          </div>
+                          {gear.is_available ? (
+                            <Badge className="bg-green-600 text-white">Available</Badge>
+                          ) : (
+                            <Badge variant="destructive">Unavailable</Badge>
+                          )}
+                        </div>
+                        <p className="text-sm text-muted-foreground mb-2 line-clamp-2">{gear.description || 'No description'}</p>
+                        <div className="flex justify-between items-center text-xs text-muted-foreground">
+                          <span className="flex items-center"><MapPin className="w-3 h-3 mr-1" />{gear.location}</span>
+                          <div className="flex gap-1">
+                            <Button variant="ghost" size="sm" className="h-8 px-2" onClick={() => handleEditGear(gear)}><Edit className="w-3 h-3 mr-1" />{t('common.edit')}</Button>
+                            <Button variant="ghost" size="sm" className="text-destructive h-8 px-2" onClick={() => handleDeleteGear(gear.id)}><Trash2 className="w-3 h-3" /></Button>
+                          </div>
+                        </div>
+                      </Card>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-12 text-muted-foreground">
+                    <Package className="w-12 h-12 mx-auto mb-4 opacity-40" />
+                    <p className="text-lg font-medium mb-2">No gear listed yet</p>
+                    <p className="text-sm mb-4">List your cameras, lenses, and equipment for other creatives to rent.</p>
+                    <Button onClick={() => setShowAddGearForm(true)}><Plus className="w-4 h-4 mr-2" />List Your First Gear</Button>
+                  </div>
+                )}
               </Card>
             </TabsContent>
 

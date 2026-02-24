@@ -487,6 +487,7 @@ export type Database = {
           name: string | null
           phone: string | null
           profession: string | null
+          role: string
           updated_at: string
           website: string | null
         }
@@ -499,6 +500,7 @@ export type Database = {
           name?: string | null
           phone?: string | null
           profession?: string | null
+          role?: string
           updated_at?: string
           website?: string | null
         }
@@ -511,6 +513,7 @@ export type Database = {
           name?: string | null
           phone?: string | null
           profession?: string | null
+          role?: string
           updated_at?: string
           website?: string | null
         }

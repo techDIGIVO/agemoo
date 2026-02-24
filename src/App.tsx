@@ -45,6 +45,17 @@ import CollectionDetail from "./pages/CollectionDetail";
 import ProfileSettings from "./pages/ProfileSettings";
 import GearDetailPage from "./pages/GearAvailabilityPage";
 import GearAvailabilityPage from "./pages/GearAvailabilityPage";
+import AdminLayout from "./components/admin/AdminLayout";
+import AdminOverview from "./pages/admin/AdminOverview";
+import AdminUsers from "./pages/admin/AdminUsers";
+import AdminServices from "./pages/admin/AdminServices";
+import AdminGear from "./pages/admin/AdminGear";
+import AdminBookings from "./pages/admin/AdminBookings";
+import AdminSubscribers from "./pages/admin/AdminSubscribers";
+import AdminMessages from "./pages/admin/AdminMessages";
+import AdminSupport from "./pages/admin/AdminSupport";
+import AdminAnalytics from "./pages/admin/AdminAnalytics";
+import AdminSettings from "./pages/admin/AdminSettings";
 
 const App = () => {
   const [queryClient] = useState(() => new QueryClient({
@@ -103,6 +114,21 @@ const App = () => {
                 <Route path="/cookies" element={<Cookies />} />
                 <Route path="/gdpr" element={<GDPR />} />
                 <Route path="/support/faqs" element={<SupportFAQ />} />
+
+                {/* Admin routes */}
+                <Route path="/admin" element={<AdminLayout />}>
+                  <Route index element={<AdminOverview />} />
+                  <Route path="users" element={<AdminUsers />} />
+                  <Route path="services" element={<AdminServices />} />
+                  <Route path="gear" element={<AdminGear />} />
+                  <Route path="bookings" element={<AdminBookings />} />
+                  <Route path="subscribers" element={<AdminSubscribers />} />
+                  <Route path="messages" element={<AdminMessages />} />
+                  <Route path="support" element={<AdminSupport />} />
+                  <Route path="analytics" element={<AdminAnalytics />} />
+                  <Route path="settings" element={<AdminSettings />} />
+                </Route>
+
                 {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                 <Route path="*" element={<NotFound />} />
               </Routes>
