@@ -3,9 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Camera, Users, Star, ArrowRight, Play, Package } from "lucide-react";
+import { Camera, Users, Star, ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from "@/components/ui/dialog";
 import { VendorSignupDialog } from "@/components/marketplace/VendorSignupDialog";
 import heroImage from "@/assets/hero-african-photographers.jpg";
 import { useAuth } from "@/hooks/useAuth";
@@ -15,7 +14,6 @@ const Hero = () => {
   const { user } = useAuth()
   const { t } = useLanguage();
   const [vendorSignupOpen, setVendorSignupOpen] = useState(false);
-  const [demoVideoOpen, setDemoVideoOpen] = useState(false);
   return <section className="relative min-h-screen flex items-center overflow-hidden">
       {/* Video Background */}
       <div className="absolute inset-0 z-0">
@@ -65,54 +63,6 @@ const Hero = () => {
                 {t('hero.startCreating')}
                 <ArrowRight className="w-5 h-5 ml-2" />
               </Button>
-
-              <Dialog open={demoVideoOpen} onOpenChange={setDemoVideoOpen}>
-                <DialogTrigger asChild>
-                  <Button variant="outline" size="lg" className="text-lg px-8 py-6 font-semibold bg-white/10 text-white border-white/20 hover:bg-white/20">
-                    <Play className="w-5 h-5 mr-2" />
-                    {t('hero.watchDemo')}
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="max-w-4xl">
-                  <DialogHeader>
-                    <DialogTitle>{t('hero.demoTitle')}</DialogTitle>
-                    <DialogDescription>
-                      {t('hero.demoDescription')}
-                    </DialogDescription>
-                  </DialogHeader>
-                  <div className="grid md:grid-cols-2 gap-4">
-                    <Card 
-                      className="p-6 cursor-pointer hover:shadow-lg transition-all"
-                      onClick={() => navigate('/demos/creatives')}
-                    >
-                      <Camera className="w-12 h-12 text-primary mb-4" />
-                      <h3 className="text-xl font-semibold mb-2">{t('hero.forPhotographers')}</h3>
-                      <p className="text-sm text-muted-foreground mb-4">
-                        {t('hero.photographersDesc')}
-                      </p>
-                      <Button className="w-full">
-                        <Play className="w-4 h-4 mr-2" />
-                        {t('hero.watchCreativeDemo')}
-                      </Button>
-                    </Card>
-                    
-                    <Card 
-                      className="p-6 cursor-pointer hover:shadow-lg transition-all"
-                      onClick={() => navigate('/demos/printers')}
-                    >
-                      <Package className="w-12 h-12 text-primary mb-4" />
-                      <h3 className="text-xl font-semibold mb-2">{t('hero.forPrintServices')}</h3>
-                      <p className="text-sm text-muted-foreground mb-4">
-                        {t('hero.printServicesDesc')}
-                      </p>
-                      <Button className="w-full">
-                        <Play className="w-4 h-4 mr-2" />
-                        {t('hero.watchPrinterDemo')}
-                      </Button>
-                    </Card>
-                  </div>
-                </DialogContent>
-              </Dialog>
             </div>
 
             {/* Stats */}

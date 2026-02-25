@@ -25,7 +25,6 @@ const Footer = () => {
     [t('footer.company')]: [
       { name: t('footer.aboutUs'), href: "/about" },
       { name: t('footer.careers'), href: "/careers" },
-      { name: t('footer.pressKit'), href: "/press" },
       { name: t('footer.contact'), href: "/contact" }
     ],
     [t('footer.legal')]: [
