@@ -346,7 +346,7 @@ const Careers = () => {
             <div className="text-center mb-12">
               <h2 className="text-3xl font-bold mb-4">What Our Team Says</h2>
               <p className="text-muted-foreground max-w-2xl mx-auto">
-                Hear from our team members about their experience working at BOP 3.0
+                Hear from our team members about their experience working at Agemoo
               </p>
             </div>
 
@@ -355,7 +355,7 @@ const Careers = () => {
                 {
                   name: "Sarah Adebayo",
                   role: "Senior Developer",
-                  quote: "Working at BOP 3.0 has been incredible. The team is supportive, the work is challenging, and we're making a real impact on the photography community.",
+                  quote: "Working at Agemoo has been incredible. The team is supportive, the work is challenging, and we're making a real impact on the photography community.",
                   avatar: "SA"
                 },
                 {

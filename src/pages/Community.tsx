@@ -34,7 +34,7 @@ const Community = () => {
         verified: true
       },
       content: "Just completed my 100th wedding this year! Feeling grateful for this amazing community that's helped me grow. Here are my top 5 lessons learned...",
-      image: "/placeholder.svg",
+      image: "https://images.unsplash.com/photo-1519741497674-611481863552?w=600&h=400&fit=crop",
       likes: 284,
       comments: 47,
       shares: 23,
@@ -51,7 +51,7 @@ const Community = () => {
         verified: false
       },
       content: "New lighting technique I've been experimenting with for corporate headshots. The results have been incredible! Sharing my setup and settings...",
-      image: "/placeholder.svg",
+      image: "https://images.unsplash.com/photo-1604537529428-15bcbeecfe4d?w=600&h=400&fit=crop",
       likes: 156,
       comments: 32,
       shares: 15,
@@ -68,7 +68,7 @@ const Community = () => {
         verified: true
       },
       content: "Announcing our monthly meetup this Saturday at Victoria Island! We'll be covering street photography techniques and networking. All skill levels welcome!",
-      image: "/placeholder.svg",
+      image: "https://images.unsplash.com/photo-1542038784456-1ea8e935640e?w=600&h=400&fit=crop",
       likes: 89,
       comments: 28,
       shares: 34,

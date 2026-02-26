@@ -35,7 +35,7 @@ const Contact = () => {
       title: "Email Support",
       description: "Get help via email",
       icon: Mail,
-      contact: "support@bop3.com",
+      contact: "support@agemoo.com",
       hours: "24/7 - Response within 2 hours",
       color: "bg-blue-500"
     },
@@ -43,7 +43,7 @@ const Contact = () => {
       title: "Phone Support",
       description: "Speak with our team",
       icon: Phone,
-      contact: "+234-800-BOP-HELP",
+      contact: "+234-800-AGE-HELP",
       hours: "Mon-Fri 9AM-6PM WAT",
       color: "bg-green-500"
     },
@@ -80,14 +80,14 @@ const Contact = () => {
       address: "Victoria Island Business District, Lagos, Nigeria",
       hours: "Monday - Friday: 9:00 AM - 6:00 PM WAT",
       phone: "+234-901-234-5678",
-      email: "lagos@bop3.com"
+      email: "lagos@agemoo.com"
     },
     {
       city: "Abuja",
       address: "Central Business District, Abuja, Nigeria",
       hours: "Monday - Friday: 9:00 AM - 6:00 PM WAT",
       phone: "+234-902-345-6789",
-      email: "abuja@bop3.com"
+      email: "abuja@agemoo.com"
     }
   ];
 

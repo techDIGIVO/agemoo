@@ -16,8 +16,6 @@ import ServiceDetail from "./pages/ServiceDetail";
 import GearDetail from "./pages/GearDetail";
 import VendorProfile from "./pages/VendorProfile";
 import Messages from "./pages/Messages";
-import DemoCreatives from "./pages/DemoCreatives";
-import DemoPrinters from "./pages/DemoPrinters";
 import About from "./pages/About";
 import Blog from "./pages/Blog";
 import BlogPost from "./pages/BlogPost";
@@ -43,7 +41,6 @@ import AuthPage from "./pages/Auth";
 import VendorRegistration from "./pages/VendorRegistration";
 import CollectionDetail from "./pages/CollectionDetail";
 import ProfileSettings from "./pages/ProfileSettings";
-import GearDetailPage from "./pages/GearAvailabilityPage";
 import GearAvailabilityPage from "./pages/GearAvailabilityPage";
 import AdminLayout from "./components/admin/AdminLayout";
 import AdminOverview from "./pages/admin/AdminOverview";
@@ -95,8 +92,6 @@ const App = () => {
                 <Route path="/dashboard/bookings" element={<DashboardBookings />} />
                 <Route path="/dashboard/profile" element={<DashboardProfile />} />
                 <Route path="/dashboard/saved" element={<DashboardSaved />} />
-                <Route path="/demos/creatives" element={<DemoCreatives />} />
-                <Route path="/demos/printers" element={<DemoPrinters />} />
                 <Route path="/about" element={<About />} />
                 <Route path="/blog" element={<Blog />} />
                 <Route path="/blog/new" element={<CreateBlogPost />} />
